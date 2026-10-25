@@ -401,11 +401,15 @@ export class BkashServer {
   }
 
   /**
-   * Query payment status by paymentId.
+   * Query payment status by paymentId (accepts either string or { paymentId }).
    */
-  public async queryPayment(params: QueryPaymentParams): Promise<PaymentExecutionResult> {
+  public async queryPayment(params: QueryPaymentParams | string): Promise<PaymentExecutionResult> {
+    const paymentId = typeof params === 'string' ? params.trim() : (params?.paymentId ? String(params.paymentId).trim() : '');
+    if (!paymentId) {
+      throw new BkashError('paymentId is required for queryPayment.');
+    }
     const token = await this.getValidToken();
-    const result = await this.adapter.queryPayment(token, params.paymentId);
+    const result = await this.adapter.queryPayment(token, paymentId);
     return {
       ...result,
       customerMsisdn: result.customerMsisdn ? maskMsisdn(result.customerMsisdn) : undefined,
