@@ -65,11 +65,21 @@
   },
   "typesVersions": {
     "*": {
-      "react": ["./dist/react.d.ts"],
-      "react-native": ["./dist/react-native.d.ts"],
-      "vue": ["./dist/vue.d.ts"],
-      "svelte": ["./dist/svelte.d.ts"],
-      "angular": ["./dist/angular.d.ts"]
+      "react": [
+        "./dist/react.d.ts"
+      ],
+      "react-native": [
+        "./dist/react-native.d.ts"
+      ],
+      "vue": [
+        "./dist/vue.d.ts"
+      ],
+      "svelte": [
+        "./dist/svelte.d.ts"
+      ],
+      "angular": [
+        "./dist/angular.d.ts"
+      ]
     }
   },
   "sideEffects": false,
@@ -83,13 +93,17 @@
   },
   "peerDependencies": {
     "react": ">=16.8.0",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-webview": "*"
   },
   "peerDependenciesMeta": {
     "react": {
       "optional": true
     },
     "react-native": {
+      "optional": true
+    },
+    "react-native-webview": {
       "optional": true
     }
   },
@@ -114,11 +128,18 @@
   "author": "Antigravity Open Source",
   "license": "MIT",
   "devDependencies": {
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.7",
+    "@vue/test-utils": "^2.5.1",
+    "jsdom": "^30.1.3",
     "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "svelte": "^5.57.2",
     "tsup": "^8.2.4",
     "typescript": "^5.5.4",
-    "vitest": "^2.1.3"
+    "vitest": "^2.1.3",
+    "vue": "^3.5.44"
   }
 }
