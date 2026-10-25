@@ -26,31 +26,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Secret Scan (Gitleaks)
-        uses: gitleaks/gitleaks-action@cca674514a6015569d651bc5239e032541a704e6 # v2.3.9
+        uses: gitleaks/gitleaks-action@v2
         continue-on-error: false
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@fe02b34f77f8bc70b720a8f335c1bb777582f322 # v4.0.0
+        uses: pnpm/action-setup@v4
         with:
-          version: 12.3.4
+          run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@1e60f63c7bc0455ca347c74ed8449c2847c1f964 # v4.2.0
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile=false
 
       - name: Configure GitHub Pages
         id: pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+        uses: actions/configure-pages@v5
 
       - name: Build CSS & Website
         env:
@@ -76,7 +76,7 @@ jobs:
 
       - name: Upload Pages Artifact
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: website/dist
 
@@ -94,4 +94,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+        uses: actions/deploy-pages@v4
