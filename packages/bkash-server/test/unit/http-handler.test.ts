@@ -34,7 +34,14 @@ describe('Web-Standard HTTP Handler & Framework Adapters', () => {
   });
 
   it('handles POST /create returning redirectUrl and paymentId', async () => {
-    const handler = new BkashHttpHandler(bkash, { basePath: '/api/bkash' });
+    const handler = new BkashHttpHandler(bkash, {
+      basePath: '/api/bkash',
+      resolveOrder: async () => ({
+        amount: 1550,
+        currency: 'BDT',
+        invoiceNumber: 'INV_1001',
+      }),
+    });
 
     const req = new Request('http://localhost:3000/api/bkash/create', {
       method: 'POST',

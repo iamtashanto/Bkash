@@ -147,13 +147,19 @@ describe('Extended Core Coverage & Framework Adapters', () => {
     });
 
     it('invokes createExpressHandler middleware', async () => {
-      const handler = createExpressHandler(bkash);
+      const opts = {
+        resolveOrder: async () => ({
+          amount: 100,
+          currency: 'BDT' as const,
+          invoiceNumber: 'INV_TEST',
+        }),
+      };
+      const handler = createExpressHandler(bkash, opts);
       const req: any = {
         url: '/create',
         method: 'POST',
         headers: { host: 'localhost:3000', 'content-type': 'application/json' },
         body: {
-          amount: 100,
           invoiceNumber: 'INV_EXP',
           callbackUrl: 'http://localhost/callback',
         },
@@ -176,12 +182,18 @@ describe('Extended Core Coverage & Framework Adapters', () => {
     });
 
     it('invokes createHonoHandler', async () => {
-      const honoHandler = createHonoHandler(bkash);
+      const opts = {
+        resolveOrder: async () => ({
+          amount: 100,
+          currency: 'BDT' as const,
+          invoiceNumber: 'INV_TEST',
+        }),
+      };
+      const honoHandler = createHonoHandler(bkash, opts);
       const req = new Request('http://localhost:3000/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: 100,
           invoiceNumber: 'INV_HONO',
           callbackUrl: 'http://localhost/callback',
         }),
@@ -192,12 +204,18 @@ describe('Extended Core Coverage & Framework Adapters', () => {
     });
 
     it('invokes createNextHandler', async () => {
-      const { POST } = createNextHandler(bkash);
+      const opts = {
+        resolveOrder: async () => ({
+          amount: 100,
+          currency: 'BDT' as const,
+          invoiceNumber: 'INV_TEST',
+        }),
+      };
+      const { POST } = createNextHandler(bkash, opts);
       const req = new Request('http://localhost:3000/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: 100,
           invoiceNumber: 'INV_NEXT',
           callbackUrl: 'http://localhost/callback',
         }),
@@ -208,16 +226,22 @@ describe('Extended Core Coverage & Framework Adapters', () => {
     });
 
     it('invokes createSvelteKitHandler, createRemixHandler, and createAstroHandler', async () => {
-      const svelteHandler = createSvelteKitHandler(bkash);
-      const remixHandler = createRemixHandler(bkash);
-      const astroHandler = createAstroHandler(bkash);
+      const opts = {
+        resolveOrder: async () => ({
+          amount: 100,
+          currency: 'BDT' as const,
+          invoiceNumber: 'INV_TEST',
+        }),
+      };
+      const svelteHandler = createSvelteKitHandler(bkash, opts);
+      const remixHandler = createRemixHandler(bkash, opts);
+      const astroHandler = createAstroHandler(bkash, opts);
 
       const makeReq = () =>
         new Request('http://localhost:3000/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount: 100,
             invoiceNumber: 'INV_MULTI',
             callbackUrl: 'http://localhost/callback',
           }),
@@ -233,13 +257,19 @@ describe('Extended Core Coverage & Framework Adapters', () => {
       expect(astroRes.status).toBe(200);
     });
     it('invokes createFastifyHandler and createKoaHandler', async () => {
-      const fastifyHandler = createFastifyHandler(bkash);
+      const opts = {
+        resolveOrder: async () => ({
+          amount: 100,
+          currency: 'BDT' as const,
+          invoiceNumber: 'INV_TEST',
+        }),
+      };
+      const fastifyHandler = createFastifyHandler(bkash, opts);
       const req: any = {
         url: '/create',
         method: 'POST',
         headers: { host: 'localhost:3000', 'content-type': 'application/json' },
         body: {
-          amount: 100,
           invoiceNumber: 'INV_FASTIFY',
           callbackUrl: 'http://localhost/callback',
         },
@@ -263,7 +293,7 @@ describe('Extended Core Coverage & Framework Adapters', () => {
       expect(reply.statusCode).toBe(200);
       expect(fastifyOutput).toContain('BKASH_PAY_MOCK_12345');
 
-      const koaHandler = createKoaHandler(bkash);
+      const koaHandler = createKoaHandler(bkash, opts);
       const koaCtx: any = {
         req: {
           url: '/create',
@@ -272,7 +302,6 @@ describe('Extended Core Coverage & Framework Adapters', () => {
         },
         request: {
           body: {
-            amount: 100,
             invoiceNumber: 'INV_KOA',
             callbackUrl: 'http://localhost/callback',
           },
@@ -308,7 +337,7 @@ describe('Extended Core Coverage & Framework Adapters', () => {
     it('handles queryPayment', async () => {
       const queryRes = await bkash.queryPayment('BKASH_PAY_123');
       expect(queryRes).toBeDefined();
-      expect(queryRes.paymentId).toBe('BKASH_PAY_MOCK_12345');
+      expect(queryRes.paymentId).toBe('BKASH_PAY_123');
     });
   });
 });
