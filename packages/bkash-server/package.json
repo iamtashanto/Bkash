@@ -1,23 +1,56 @@
 {
   "name": "bkash-server",
   "version": "0.1.0-alpha.1",
-  "description": "Production-grade, type-safe bKash server SDK for Node.js and TypeScript",
+  "description": "Universal, edge-compatible, type-safe bKash server SDK for JavaScript and TypeScript",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./redis": {
+      "types": {
+        "import": "./dist/redis.d.ts",
+        "require": "./dist/redis.d.cts"
+      },
+      "import": "./dist/redis.js",
+      "require": "./dist/redis.cjs",
+      "default": "./dist/redis.js"
+    },
+    "./frameworks": {
+      "types": {
+        "import": "./dist/frameworks.d.ts",
+        "require": "./dist/frameworks.d.cts"
+      },
+      "import": "./dist/frameworks.js",
+      "require": "./dist/frameworks.cjs",
+      "default": "./dist/frameworks.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "redis": ["./dist/redis.d.ts"],
+      "frameworks": ["./dist/frameworks.d.ts"]
     }
   },
+  "sideEffects": false,
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run",

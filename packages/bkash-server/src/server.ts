@@ -1,24 +1,37 @@
-import crypto from 'node:crypto';
+import { generateUUID } from './utils/crypto.js';
 import type {
+  AgreementResult,
   BkashPaymentStatus,
   BkashServerConfig,
+  CancelAgreementParams,
+  CapturePaymentParams,
+  CaptureResult,
+  CreateAgreementParams,
+  CreateAgreementResult,
   CreatePaymentParams,
   CreatePaymentResult,
   ExpectedOrderDetails,
+  ExecuteAgreementParams,
   ExecutePaymentParams,
   PaymentExecutionResult,
   PaymentSession,
   QueryPaymentParams,
   RefundParams,
   RefundResult,
+  RefundStatusParams,
+  RefundStatusResult,
   SearchTransactionParams,
   TokenData,
   TokenStore,
+  VoidPaymentParams,
+  VoidResult,
 } from './types.js';
 import type { BkashVersionAdapter } from './adapters/adapter.interface.js';
 import { V1Adapter } from './adapters/v1-adapter.js';
 import { V2Adapter } from './adapters/v2-adapter.js';
 import { MemoryTokenStore } from './stores/memory-token-store.js';
+import { BkashWebhookVerifier } from './webhook/webhook-verifier.js';
+import { BkashHttpHandler, type BkashHandlerOptions } from './http/handler.js';
 import {
   BkashApiError,
   BkashDuplicateExecutionError,
@@ -33,6 +46,7 @@ export class BkashServer {
   public readonly config: BkashServerConfig;
   public readonly adapter: BkashVersionAdapter;
   public readonly tokenStore: TokenStore;
+  public readonly webhook: BkashWebhookVerifier;
   private activeRefreshPromise: Promise<string> | null = null;
   private workerInstanceId: string;
 
@@ -57,8 +71,9 @@ export class BkashServer {
       ...config,
     };
 
-    this.workerInstanceId = crypto.randomUUID();
+    this.workerInstanceId = generateUUID();
     this.tokenStore = config.tokenStore ?? new MemoryTokenStore({ cipher: config.tokenCipher });
+    this.webhook = new BkashWebhookVerifier(config.webhookOptions);
 
     if (config.apiVersion === 'v1.2.0-beta') {
       this.adapter = new V1Adapter({
@@ -394,4 +409,82 @@ export class BkashServer {
     const token = await this.getValidToken();
     return this.adapter.refundPayment(token, params);
   }
+
+  /**
+   * Check status of a refund transaction.
+   */
+  public async refundStatus(params: RefundStatusParams): Promise<RefundStatusResult> {
+    if (!this.adapter.refundStatus) {
+      throw new BkashError(`refundStatus is not supported by adapter "${this.adapter.version}".`);
+    }
+    const token = await this.getValidToken();
+    return this.adapter.refundStatus(token, params);
+  }
+
+  /**
+   * Create an agreement session (Mode 0000 or 0001).
+   */
+  public async createAgreement(params: CreateAgreementParams): Promise<CreateAgreementResult> {
+    if (!this.adapter.createAgreement) {
+      throw new BkashError(`createAgreement is not supported by adapter "${this.adapter.version}".`);
+    }
+    const token = await this.getValidToken();
+    return this.adapter.createAgreement(token, params);
+  }
+
+  /**
+   * Execute an agreement session.
+   */
+  public async executeAgreement(params: ExecuteAgreementParams): Promise<AgreementResult> {
+    if (!this.adapter.executeAgreement) {
+      throw new BkashError(`executeAgreement is not supported by adapter "${this.adapter.version}".`);
+    }
+    const token = await this.getValidToken();
+    const result = await this.adapter.executeAgreement(token, params);
+    return {
+      ...result,
+      customerMsisdn: result.customerMsisdn ? maskMsisdn(result.customerMsisdn) : undefined,
+    };
+  }
+
+  /**
+   * Cancel an active agreement.
+   */
+  public async cancelAgreement(params: CancelAgreementParams): Promise<Record<string, unknown>> {
+    if (!this.adapter.cancelAgreement) {
+      throw new BkashError(`cancelAgreement is not supported by adapter "${this.adapter.version}".`);
+    }
+    const token = await this.getValidToken();
+    return this.adapter.cancelAgreement(token, params);
+  }
+
+  /**
+   * Capture an authorized payment.
+   */
+  public async capturePayment(params: CapturePaymentParams): Promise<CaptureResult> {
+    if (!this.adapter.capturePayment) {
+      throw new BkashError(`capturePayment is not supported by adapter "${this.adapter.version}".`);
+    }
+    const token = await this.getValidToken();
+    return this.adapter.capturePayment(token, params);
+  }
+
+  /**
+   * Void an authorized payment.
+   */
+  public async voidPayment(params: VoidPaymentParams): Promise<VoidResult> {
+    if (!this.adapter.voidPayment) {
+      throw new BkashError(`voidPayment is not supported by adapter "${this.adapter.version}".`);
+    }
+    const token = await this.getValidToken();
+    return this.adapter.voidPayment(token, params);
+  }
+
+  /**
+   * Creates a Web-Standard HTTP Request handler for this server instance.
+   */
+  public createHandler(options?: BkashHandlerOptions): BkashHttpHandler {
+    return new BkashHttpHandler(this, options);
+  }
 }
+

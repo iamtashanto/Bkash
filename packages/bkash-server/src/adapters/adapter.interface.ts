@@ -1,9 +1,20 @@
 import type {
+  AgreementResult,
+  CancelAgreementParams,
+  CapturePaymentParams,
+  CaptureResult,
+  CreateAgreementParams,
+  CreateAgreementResult,
   CreatePaymentParams,
   CreatePaymentResult,
+  ExecuteAgreementParams,
   PaymentExecutionResult,
   RefundParams,
   RefundResult,
+  RefundStatusParams,
+  RefundStatusResult,
+  VoidPaymentParams,
+  VoidResult,
 } from '../types.js';
 
 export interface GrantTokenResponse {
@@ -28,4 +39,16 @@ export interface BkashVersionAdapter {
   searchTransaction(idToken: string, trxId: string): Promise<Record<string, unknown>>;
 
   refundPayment(idToken: string, params: RefundParams): Promise<RefundResult>;
+
+  refundStatus?(idToken: string, params: RefundStatusParams): Promise<RefundStatusResult>;
+
+  createAgreement?(idToken: string, params: CreateAgreementParams): Promise<CreateAgreementResult>;
+
+  executeAgreement?(idToken: string, params: ExecuteAgreementParams): Promise<AgreementResult>;
+
+  cancelAgreement?(idToken: string, params: CancelAgreementParams): Promise<Record<string, unknown>>;
+
+  capturePayment?(idToken: string, params: CapturePaymentParams): Promise<CaptureResult>;
+
+  voidPayment?(idToken: string, params: VoidPaymentParams): Promise<VoidResult>;
 }

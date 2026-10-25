@@ -1,26 +1,102 @@
 {
   "name": "bkash-client",
   "version": "0.1.0-alpha.1",
-  "description": "Headless and UI client library for bKash payment flows",
+  "description": "Universal, headless and multi-framework client SDK for bKash payment flows",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "types": {
+        "import": "./dist/react.d.ts",
+        "require": "./dist/react.d.cts"
+      },
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs",
+      "default": "./dist/react.js"
+    },
+    "./react-native": {
+      "types": {
+        "import": "./dist/react-native.d.ts",
+        "require": "./dist/react-native.d.cts"
+      },
+      "import": "./dist/react-native.js",
+      "require": "./dist/react-native.cjs",
+      "default": "./dist/react-native.js"
+    },
+    "./vue": {
+      "types": {
+        "import": "./dist/vue.d.ts",
+        "require": "./dist/vue.d.cts"
+      },
+      "import": "./dist/vue.js",
+      "require": "./dist/vue.cjs",
+      "default": "./dist/vue.js"
+    },
+    "./svelte": {
+      "types": {
+        "import": "./dist/svelte.d.ts",
+        "require": "./dist/svelte.d.cts"
+      },
+      "import": "./dist/svelte.js",
+      "require": "./dist/svelte.cjs",
+      "default": "./dist/svelte.js"
+    },
+    "./angular": {
+      "types": {
+        "import": "./dist/angular.d.ts",
+        "require": "./dist/angular.d.cts"
+      },
+      "import": "./dist/angular.js",
+      "require": "./dist/angular.cjs",
+      "default": "./dist/angular.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "react": ["./dist/react.d.ts"],
+      "react-native": ["./dist/react-native.d.ts"],
+      "vue": ["./dist/vue.d.ts"],
+      "svelte": ["./dist/svelte.d.ts"],
+      "angular": ["./dist/angular.d.ts"]
     }
   },
+  "sideEffects": false,
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-native": "*"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-native": {
+      "optional": true
+    }
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "dev": "tsup --watch"
   },
@@ -30,12 +106,17 @@
     "checkout",
     "react",
     "react-native",
+    "vue",
+    "svelte",
+    "angular",
     "headless"
   ],
   "author": "Antigravity Open Source",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "react": "^18.3.1",
     "tsup": "^8.2.4",
     "typescript": "^5.5.4",
     "vitest": "^2.1.3"

@@ -133,6 +133,159 @@ export interface RefundResult {
 }
 
 /**
+ * Parameters for checking refund status.
+ */
+export interface RefundStatusParams {
+  paymentId: string;
+  trxId: string;
+}
+
+/**
+ * Result returned from refund status check.
+ */
+export interface RefundStatusResult {
+  refundTrxId: string;
+  originalTrxId: string;
+  amount: string;
+  currency: 'BDT';
+  completedAt: string;
+  transactionStatus: 'Completed';
+  rawResponse: Record<string, unknown>;
+}
+
+/**
+ * Parameters for creating an agreement session (Mode 0000 or 0001).
+ */
+export interface CreateAgreementParams {
+  payerReference: string;
+  callbackUrl: string;
+  mode?: '0000' | '0001';
+  amount?: number | string;
+  currency?: 'BDT';
+  invoiceNumber?: string;
+}
+
+/**
+ * Result returned from agreement creation.
+ */
+export interface CreateAgreementResult {
+  paymentId: string;
+  agreementId?: string;
+  redirectUrl: string;
+  callbackUrl: string;
+  status: 'Initiated';
+}
+
+/**
+ * Parameters for executing an agreement session.
+ */
+export interface ExecuteAgreementParams {
+  paymentId: string;
+}
+
+/**
+ * Result returned upon agreement execution.
+ */
+export interface AgreementResult {
+  agreementId: string;
+  payerReference: string;
+  agreementStatus: 'Completed' | 'Active';
+  customerMsisdn?: string;
+  rawResponse: Record<string, unknown>;
+}
+
+/**
+ * Parameters for cancelling an active agreement.
+ */
+export interface CancelAgreementParams {
+  agreementId: string;
+}
+
+/**
+ * Parameters for capturing an authorized payment.
+ */
+export interface CapturePaymentParams {
+  paymentId: string;
+  amount: number | string;
+}
+
+/**
+ * Result returned upon payment capture.
+ */
+export interface CaptureResult {
+  paymentId: string;
+  trxId: string;
+  amount: string;
+  currency: 'BDT';
+  transactionStatus: 'Completed';
+  rawResponse: Record<string, unknown>;
+}
+
+/**
+ * Parameters for voiding an authorized payment.
+ */
+export interface VoidPaymentParams {
+  paymentId: string;
+}
+
+/**
+ * Result returned upon voiding an authorized payment.
+ */
+export interface VoidResult {
+  paymentId: string;
+  transactionStatus: 'Voided' | 'Cancelled';
+  rawResponse: Record<string, unknown>;
+}
+
+/**
+ * AWS SNS Webhook Payload.
+ */
+export interface BkashSnsMessage {
+  Type: 'Notification' | 'SubscriptionConfirmation' | 'UnsubscribeConfirmation';
+  MessageId: string;
+  TopicArn: string;
+  Subject?: string;
+  Message: string;
+  Timestamp: string;
+  SignatureVersion: '1' | '2';
+  Signature: string;
+  SigningCertURL: string;
+  SubscribeURL?: string;
+  UnsubscribeURL?: string;
+}
+
+/**
+ * Verified webhook notification result.
+ */
+export interface VerifiedWebhookPayload {
+  messageId: string;
+  topicArn: string;
+  type: string;
+  data: Record<string, unknown>;
+  timestamp: string;
+}
+
+/**
+ * Options for Webhook Verifier.
+ */
+export interface BkashWebhookOptions {
+  /** Optional allowed Topic ARNs to prevent spoofing */
+  allowedTopicArns?: string[];
+  /** Allowed clock drift window in milliseconds (default: 15 minutes) */
+  freshnessWindowMs?: number;
+  /** Replay cache store for MessageId */
+  messageStore?: MessageStore;
+}
+
+/**
+ * Message store interface for webhook deduplication.
+ */
+export interface MessageStore {
+  has(messageId: string): Promise<boolean>;
+  add(messageId: string, ttlSeconds: number): Promise<void>;
+}
+
+/**
  * Token payload structure stored in TokenStore.
  */
 export interface TokenData {
@@ -215,6 +368,8 @@ export interface BkashServerConfig {
   sessionStore?: SessionStore;
   /** Optional encryption-at-rest cipher hook */
   tokenCipher?: TokenCipher;
+  /** Optional webhook options (allowedTopicArns, freshnessWindowMs, messageStore) */
+  webhookOptions?: BkashWebhookOptions;
   /** Timeout for HTTP requests in ms (default: 30000) */
   timeoutMs?: number;
   /** Enable debug logging (PII and secrets are always sanitized) */
