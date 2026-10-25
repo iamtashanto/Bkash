@@ -1,3 +1,4 @@
+import { ref, readonly, type Ref, type DeepReadonly } from 'vue';
 import {
   BkashClient,
   type BkashClientOptions,
@@ -5,37 +6,58 @@ import {
   type InitiateCheckoutParams,
 } from './index.js';
 
+export interface UseBkashReturn {
+  state: DeepReadonly<Ref<BkashClientState>>;
+  error: DeepReadonly<Ref<Error | null>>;
+  paymentId: DeepReadonly<Ref<string | null>>;
+  getState: () => BkashClientState;
+  getError: () => Error | null;
+  getPaymentId: () => string | null;
+  checkout: (params: InitiateCheckoutParams) => Promise<void>;
+  reset: () => void;
+  client: BkashClient;
+}
+
 /**
  * Vue 3 Composable for bKash Checkout.
+ * Provides deep reactivity via Vue 3 Refs, compatible with <script setup> and JSX templates.
  */
-export function useBkash(options?: BkashClientOptions) {
+export function useBkash(options?: BkashClientOptions): UseBkashReturn {
   const client = new BkashClient(options);
-  let state: BkashClientState = client.getState();
-  let error: Error | null = null;
+  const state = ref<BkashClientState>(client.getState());
+  const error = ref<Error | null>(null);
+  const paymentId = ref<string | null>(client.getPaymentId());
 
   client.subscribe((newState) => {
-    state = newState;
+    state.value = newState;
+    paymentId.value = client.getPaymentId();
   });
 
   const checkout = async (params: InitiateCheckoutParams) => {
-    error = null;
+    error.value = null;
     try {
       await client.checkout(params);
+      paymentId.value = client.getPaymentId();
     } catch (err: unknown) {
-      error = err instanceof Error ? err : new Error(String(err));
-      throw error;
+      const errObj = err instanceof Error ? err : new Error(String(err));
+      error.value = errObj;
+      throw errObj;
     }
   };
 
   const reset = () => {
-    error = null;
+    error.value = null;
     client.reset();
+    paymentId.value = null;
   };
 
   return {
-    getState: () => state,
-    getError: () => error,
-    getPaymentId: () => client.getPaymentId(),
+    state: readonly(state),
+    error: readonly(error),
+    paymentId: readonly(paymentId),
+    getState: () => state.value,
+    getError: () => error.value,
+    getPaymentId: () => paymentId.value,
     checkout,
     reset,
     client,
