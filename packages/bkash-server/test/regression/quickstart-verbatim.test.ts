@@ -29,7 +29,16 @@ describe('Regression AUD-01: Verbatim README Quickstart Execution', () => {
       baseUrl,
     });
 
-    app.use('/api/bkash', createExpressHandler(bkash));
+    app.use(
+      '/api/bkash',
+      createExpressHandler(bkash, {
+        resolveOrder: async (req, body) => ({
+          amount: 1550,
+          currency: 'BDT',
+          invoiceNumber: 'INV_1001',
+        }),
+      })
+    );
 
     await new Promise<void>((resolve) => {
       server = app.listen(0, () => {

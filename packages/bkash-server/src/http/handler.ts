@@ -1,9 +1,35 @@
 import type { BkashServer } from '../server.js';
-import type { PaymentExecutionResult, VerifiedWebhookPayload } from '../types.js';
+import type { ExpectedOrderDetails, PaymentExecutionResult, VerifiedWebhookPayload } from '../types.js';
 
 export interface BkashHandlerOptions {
   /** Optional base path prefix (e.g. "/api/bkash") */
   basePath?: string;
+  /**
+   * Mandatory server-side order resolver to prevent client amount tampering.
+   * Resolves the authoritative amount, currency, and invoiceNumber from your internal database or session.
+   */
+  resolveOrder?: (
+    req: Request,
+    clientBody: Record<string, unknown>
+  ) => Promise<ExpectedOrderDetails> | ExpectedOrderDetails;
+  /**
+   * Explicit opt-in flag to allow client-supplied amounts.
+   * WARNING: Insecure for e-commerce checkouts. Only use for donation forms or test prototypes.
+   */
+  allowClientAmount?: boolean;
+  /**
+   * Allowed redirect origins for callback redirects to prevent open-redirect vulnerabilities.
+   */
+  allowedRedirectOrigins?: string[];
+  /**
+   * Optional custom redirect URL after payment completion.
+   */
+  redirectUrl?: string;
+  /**
+   * Authorization hook for sensitive admin endpoints (refund, payouts).
+   * Denies access by default if not implemented.
+   */
+  authorizeAdmin?: (req: Request) => Promise<boolean> | boolean;
   /** Hook called when payment completes successfully */
   onSuccess?: (
     result: PaymentExecutionResult,
@@ -48,8 +74,45 @@ export class BkashHttpHandler {
     try {
       // 1. Create Payment: POST /create
       if (request.method === 'POST' && path === '/create') {
-        const body = (await request.json()) as any;
-        const result = await this.bkash.createPayment(body);
+        const body = ((await request.json().catch(() => ({}))) || {}) as Record<string, any>;
+        let expectedOrder: ExpectedOrderDetails;
+
+        if (this.options.resolveOrder) {
+          expectedOrder = await this.options.resolveOrder(request, body);
+        } else if (this.options.allowClientAmount) {
+          if (!body.amount || !body.invoiceNumber) {
+            return new Response(
+              JSON.stringify({ success: false, error: 'amount and invoiceNumber are required.' }),
+              { status: 400, headers: { 'Content-Type': 'application/json' } }
+            );
+          }
+          expectedOrder = {
+            amount: body.amount,
+            currency: body.currency || 'BDT',
+            invoiceNumber: body.invoiceNumber,
+          };
+        } else {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error:
+                'Security Error: Client-supplied amounts are disabled by default. Provide a resolveOrder(request, body) callback in BkashHandlerOptions, or set allowClientAmount: true.',
+            }),
+            { status: 400, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const defaultCallback = new URL(request.url).origin + (basePath || '') + '/callback';
+        const createParams = {
+          amount: expectedOrder.amount,
+          currency: expectedOrder.currency || 'BDT',
+          invoiceNumber: expectedOrder.invoiceNumber,
+          callbackUrl: body.callbackUrl || defaultCallback,
+          orderId: body.orderId,
+          payerReference: body.payerReference,
+        };
+
+        const result = await this.bkash.createPayment(createParams);
         return new Response(JSON.stringify({ success: true, ...result }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
@@ -101,22 +164,65 @@ export class BkashHttpHandler {
           if (customRes) return customRes;
         }
 
+        // Open Redirect Protection
+        const requestedReturn = url.searchParams.get('returnUrl') || this.options.redirectUrl;
+        if (requestedReturn) {
+          try {
+            const targetOrigin = new URL(requestedReturn).origin;
+            const isAllowed = (this.options.allowedRedirectOrigins || []).includes(targetOrigin);
+            if (isAllowed) {
+              return Response.redirect(requestedReturn, 302);
+            }
+          } catch {
+            // Ignore invalid URLs
+          }
+        }
+
         return new Response(JSON.stringify({ success: true, ...result }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         });
       }
 
-      // 3. Webhook: POST /webhook
+      // 3. Status Query: GET /status?paymentId=...
+      if (request.method === 'GET' && path === '/status') {
+        const paymentId = url.searchParams.get('paymentId') || url.searchParams.get('paymentID');
+        if (!paymentId) {
+          return new Response(JSON.stringify({ success: false, error: 'paymentId query parameter is required.' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        const queryResult = await this.bkash.queryPayment(paymentId);
+        // Data minimization: expose public checkout fields only; exclude internal tokens and unmasked PII
+        const publicStatus = {
+          success: true,
+          paymentId: queryResult.paymentId,
+          trxId: queryResult.trxId,
+          transactionStatus: queryResult.transactionStatus,
+          amount: queryResult.amount,
+          currency: queryResult.currency,
+          invoiceNumber: queryResult.invoiceNumber,
+          completedAt: queryResult.completedAt,
+          customerMsisdn: queryResult.customerMsisdn, // Already masked (017****5678)
+        };
+
+        return new Response(JSON.stringify(publicStatus), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // 4. Webhook: POST /webhook
       if (request.method === 'POST' && path === '/webhook') {
         const rawBody = await request.text();
         const verified = await this.bkash.webhook.verify(rawBody);
 
         if (verified) {
-          // If transaction info is in webhook, query to confirm before completing
           const paymentId = (verified.data as any)?.paymentID || (verified.data as any)?.paymentId;
           if (paymentId) {
-            await this.bkash.queryPayment({ paymentId });
+            await this.bkash.queryPayment(paymentId);
           }
 
           if (this.options.onWebhook) {

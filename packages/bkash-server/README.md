@@ -54,8 +54,18 @@ const bkash = new BkashServer({
   baseUrl: process.env.BKASH_BASE_URL!, // e.g. https://tokenized.sandbox.bka.sh
 });
 
-// Mount Web-standard payment endpoints (/create, /callback, /webhook)
-app.use('/api/bkash', createExpressHandler(bkash));
+// Mount Web-standard payment endpoints (/create, /callback, /status, /webhook)
+// Secure order resolution: amount/invoice must ALWAYS be resolved server-side
+app.use(
+  '/api/bkash',
+  createExpressHandler(bkash, {
+    resolveOrder: async (req, body) => ({
+      amount: 1550,
+      currency: 'BDT',
+      invoiceNumber: 'INV_1001',
+    }),
+  })
+);
 app.listen(3000, () => console.log('Server running on port 3000'));
 ```
 
@@ -77,7 +87,14 @@ const bkash = new BkashServer({
   baseUrl: process.env.BKASH_BASE_URL!,
 });
 
-const { GET, POST } = createNextHandler(bkash, { basePath: '/api/bkash' });
+const { GET, POST } = createNextHandler(bkash, {
+  basePath: '/api/bkash',
+  resolveOrder: async (req, body) => ({
+    amount: 1550,
+    currency: 'BDT',
+    invoiceNumber: 'INV_1001',
+  }),
+});
 export { GET, POST };
 ```
 
