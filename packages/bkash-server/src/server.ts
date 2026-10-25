@@ -30,6 +30,8 @@ import type { BkashVersionAdapter } from './adapters/adapter.interface.js';
 import { V1Adapter } from './adapters/v1-adapter.js';
 import { V2Adapter } from './adapters/v2-adapter.js';
 import { MemoryTokenStore } from './stores/memory-token-store.js';
+import { MemorySessionStore } from './stores/memory-session-store.js';
+import type { SessionStore } from './types.js';
 import { BkashWebhookVerifier } from './webhook/webhook-verifier.js';
 import { BkashHttpHandler, type BkashHandlerOptions } from './http/handler.js';
 import {
@@ -46,6 +48,7 @@ export class BkashServer {
   public readonly config: BkashServerConfig;
   public readonly adapter: BkashVersionAdapter;
   public readonly tokenStore: TokenStore;
+  public readonly sessionStore: SessionStore;
   public readonly webhook: BkashWebhookVerifier;
   private activeRefreshPromise: Promise<string> | null = null;
   private workerInstanceId: string;
@@ -65,14 +68,29 @@ export class BkashServer {
       );
     }
 
+    const isProd = typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
+    if (!config.sessionStore && isProd) {
+      console.warn(
+        '[bkash-server] WARNING: Using default in-memory SessionStore in production. Multi-instance or serverless deployments require a shared store (Redis or Upstash) to prevent verification failures across instances.'
+      );
+    }
+    if (!config.tokenStore && isProd) {
+      console.warn(
+        '[bkash-server] WARNING: Using default in-memory TokenStore in production. Multi-instance deployments require Redis or Upstash to prevent bKash 2 calls/hr lockout.'
+      );
+    }
+
+    this.workerInstanceId = generateUUID();
+    this.tokenStore = config.tokenStore ?? new MemoryTokenStore({ cipher: config.tokenCipher });
+    this.sessionStore = config.sessionStore ?? new MemorySessionStore();
+
     this.config = {
       timeoutMs: 30000,
       debug: false,
       ...config,
+      sessionStore: this.sessionStore,
     };
 
-    this.workerInstanceId = generateUUID();
-    this.tokenStore = config.tokenStore ?? new MemoryTokenStore({ cipher: config.tokenCipher });
     this.webhook = new BkashWebhookVerifier(config.webhookOptions);
 
     if (config.apiVersion === 'v1.2.0-beta') {
