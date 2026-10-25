@@ -4,6 +4,8 @@ import type {
   PaymentExecutionResult,
   RefundParams,
   RefundResult,
+  RefundStatusParams,
+  RefundStatusResult,
 } from '../types.js';
 import type { BkashVersionAdapter, GrantTokenResponse } from './adapter.interface.js';
 import { BkashRateLimitError, mapBkashErrorCode } from '../errors.js';
@@ -285,6 +287,40 @@ export class V1Adapter implements BkashVersionAdapter {
       currency: result.currency ?? 'BDT',
       completedAt: result.completedTime || new Date().toISOString(),
       transactionStatus: result.transactionStatus,
+      rawResponse: result as unknown as Record<string, unknown>,
+    };
+  }
+
+  public async refundStatus(idToken: string, params: RefundStatusParams): Promise<RefundStatusResult> {
+    const endpoint = '/tokenized/checkout/payment/refund';
+    const result = await this.request<{
+      refundTrxID?: string;
+      originalTrxID?: string;
+      amount?: string;
+      currency?: 'BDT';
+      completedTime?: string;
+      transactionStatus?: 'Completed';
+    }>(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: idToken,
+        'X-APP-Key': this.config.appKey,
+      },
+      body: {
+        paymentID: params.paymentId,
+        trxID: params.trxId,
+      },
+    });
+
+    return {
+      refundTrxId: result.refundTrxID || '',
+      originalTrxId: result.originalTrxID || params.trxId,
+      amount: formatAmount(result.amount || '0'),
+      currency: result.currency ?? 'BDT',
+      completedAt: result.completedTime || new Date().toISOString(),
+      transactionStatus: result.transactionStatus || 'Completed',
       rawResponse: result as unknown as Record<string, unknown>,
     };
   }
