@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+echo "🔒 Running gitleaks pre-commit secret scan..."
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks dir -v .
+else
+  echo "⚠️ Warning: gitleaks not installed. Run 'brew install gitleaks' or install via binary."
+fi

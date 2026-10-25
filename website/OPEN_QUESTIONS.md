@@ -8,8 +8,8 @@
 
 ### Question 1: Package Scaffolding vs. Documentation Site Sequencing
 In the previous turn, Phase 0 (Audit) was completed with `docs/AUDIT.md`, and the npm packages (`bkash-server` and `bkash-client`) are scheduled for Phase 1 scaffolding.  
-* **Current status in repo:** The repository currently houses `docs/AUDIT.md`, the live backend integration (`LifeLineit/backend`), and live frontend checkout (`LifeLineit/public`).
-* **Approach:** The documentation site will present the audited, verified API contracts (`createBkash()`, `useBkash()`, `<BkashCheckout/>`, Tokenized v2 endpoints) as specified in `docs/AUDIT.md`, with code snippets matching the upcoming zero-dependency core. Features planned for subsequent phases (Vue composables, Angular services, Dynamic Charging v1, Payouts) will be explicitly tagged as **"Coming Soon / Roadmap"**.  
+* **Current status in repo:** The repository currently houses `docs/DESIGN.md` and reference integration documentation.
+* **Approach:** The documentation site will present the audited, verified API contracts (`createBkash()`, `useBkash()`, `<BkashCheckout/>`, Tokenized v2 endpoints) as specified in `docs/DESIGN.md`, with code snippets matching the upcoming zero-dependency core. Features planned for subsequent phases (Vue composables, Angular services, Dynamic Charging v1, Payouts) will be explicitly tagged as **"Coming Soon / Roadmap"**.  
 * **Decision needed:** Does this approach meet your expectations for Phase A/B?
 
 ---

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "include": [],
+  "references": [
+    { "path": "./packages/bkash-server" },
+    { "path": "./packages/bkash-client" }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "bkash-client",
+  "version": "0.1.0-alpha.1",
+  "description": "Headless and UI client library for bKash payment flows",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsup --watch"
+  },
+  "keywords": [
+    "bkash",
+    "payment",
+    "checkout",
+    "react",
+    "react-native",
+    "headless"
+  ],
+  "author": "Antigravity Open Source",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.3"
+  }
+}

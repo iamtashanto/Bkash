@@ -4,10 +4,16 @@
   "private": true,
   "description": "TypeScript open-source SDK for bKash payments (bkash-server, bkash-client)",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
+    "build": "pnpm --filter \"./packages/*\" run build",
+    "test": "pnpm --filter \"./packages/*\" run test",
+    "typecheck": "pnpm --filter \"./packages/*\" run typecheck",
     "build:website": "pnpm --filter bkash-website build",
-    "check:website": "pnpm --filter bkash-website check:html && pnpm --filter bkash-website check:links && pnpm --filter bkash-website check:format"
+    "check:website": "pnpm --filter bkash-website check:html && pnpm --filter bkash-website check:links && pnpm --filter bkash-website check:format",
+    "check:secrets": "gitleaks dir -v ."
   },
   "devDependencies": {
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
   }
 }

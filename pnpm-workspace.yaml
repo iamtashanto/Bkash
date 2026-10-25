@@ -1,3 +1,6 @@
 packages:
   - 'website'
   - 'packages/*'
+
+allowBuilds:
+  esbuild: true
