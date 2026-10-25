@@ -8,6 +8,5 @@ export * from './stores/upstash-rest-store.js';
 export * from './adapters/adapter.interface.js';
 export * from './adapters/v1-adapter.js';
 export * from './adapters/v2-adapter.js';
-export * from './webhook/webhook-verifier.js';
 export * from './http/handler.js';
 export * from './server.js';

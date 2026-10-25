@@ -5,6 +5,7 @@ export default defineConfig({
     index: 'src/index.ts',
     redis: 'src/redis.ts',
     frameworks: 'src/frameworks.ts',
+    webhook: 'src/webhook.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,

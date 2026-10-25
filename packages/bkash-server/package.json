@@ -34,6 +34,15 @@
       "require": "./dist/frameworks.cjs",
       "default": "./dist/frameworks.js"
     },
+    "./webhook": {
+      "types": {
+        "import": "./dist/webhook.d.ts",
+        "require": "./dist/webhook.d.cts"
+      },
+      "import": "./dist/webhook.js",
+      "require": "./dist/webhook.cjs",
+      "default": "./dist/webhook.js"
+    },
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -43,6 +52,9 @@
       ],
       "frameworks": [
         "./dist/frameworks.d.ts"
+      ],
+      "webhook": [
+        "./dist/webhook.d.ts"
       ]
     }
   },
