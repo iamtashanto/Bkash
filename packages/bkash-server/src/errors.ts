@@ -126,6 +126,22 @@ export class BkashWebhookVerificationError extends BkashError {
 }
 
 /**
+ * Thrown when a public method for an unsupported or roadmap feature
+ * (e.g. agreements, auth-and-capture, payouts) is invoked.
+ */
+export class BkashFeatureNotSupportedError extends BkashError {
+  public readonly feature: string;
+
+  constructor(feature: string) {
+    super(
+      `Feature "${feature}" is planned for a future release and is not supported in bkash-server 0.1.x. Consult status.json for feature readiness.`,
+      'BKASH_FEATURE_NOT_SUPPORTED'
+    );
+    this.feature = feature;
+  }
+}
+
+/**
  * Known bKash Error Code descriptions.
  */
 export const KNOWN_BKASH_ERRORS: Record<string, string> = {

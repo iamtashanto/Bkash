@@ -38,6 +38,7 @@ import {
   BkashApiError,
   BkashDuplicateExecutionError,
   BkashError,
+  BkashFeatureNotSupportedError,
   BkashRateLimitError,
   BkashTimeoutError,
   BkashVerificationMismatchError,
@@ -445,61 +446,42 @@ export class BkashServer {
 
   /**
    * Create an agreement session (Mode 0000 or 0001).
+   * @throws {BkashFeatureNotSupportedError} Agreements are not supported in 0.1.x.
    */
-  public async createAgreement(params: CreateAgreementParams): Promise<CreateAgreementResult> {
-    if (!this.adapter.createAgreement) {
-      throw new BkashError(`createAgreement is not supported by adapter "${this.adapter.version}".`);
-    }
-    const token = await this.getValidToken();
-    return this.adapter.createAgreement(token, params);
+  public async createAgreement(_params: CreateAgreementParams): Promise<CreateAgreementResult> {
+    throw new BkashFeatureNotSupportedError('agreements');
   }
 
   /**
    * Execute an agreement session.
+   * @throws {BkashFeatureNotSupportedError} Agreements are not supported in 0.1.x.
    */
-  public async executeAgreement(params: ExecuteAgreementParams): Promise<AgreementResult> {
-    if (!this.adapter.executeAgreement) {
-      throw new BkashError(`executeAgreement is not supported by adapter "${this.adapter.version}".`);
-    }
-    const token = await this.getValidToken();
-    const result = await this.adapter.executeAgreement(token, params);
-    return {
-      ...result,
-      customerMsisdn: result.customerMsisdn ? maskMsisdn(result.customerMsisdn) : undefined,
-    };
+  public async executeAgreement(_params: ExecuteAgreementParams): Promise<AgreementResult> {
+    throw new BkashFeatureNotSupportedError('agreements');
   }
 
   /**
    * Cancel an active agreement.
+   * @throws {BkashFeatureNotSupportedError} Agreements are not supported in 0.1.x.
    */
-  public async cancelAgreement(params: CancelAgreementParams): Promise<Record<string, unknown>> {
-    if (!this.adapter.cancelAgreement) {
-      throw new BkashError(`cancelAgreement is not supported by adapter "${this.adapter.version}".`);
-    }
-    const token = await this.getValidToken();
-    return this.adapter.cancelAgreement(token, params);
+  public async cancelAgreement(_params: CancelAgreementParams): Promise<Record<string, unknown>> {
+    throw new BkashFeatureNotSupportedError('agreements');
   }
 
   /**
    * Capture an authorized payment.
+   * @throws {BkashFeatureNotSupportedError} Auth and capture are not supported in 0.1.x.
    */
-  public async capturePayment(params: CapturePaymentParams): Promise<CaptureResult> {
-    if (!this.adapter.capturePayment) {
-      throw new BkashError(`capturePayment is not supported by adapter "${this.adapter.version}".`);
-    }
-    const token = await this.getValidToken();
-    return this.adapter.capturePayment(token, params);
+  public async capturePayment(_params: CapturePaymentParams): Promise<CaptureResult> {
+    throw new BkashFeatureNotSupportedError('auth-and-capture');
   }
 
   /**
    * Void an authorized payment.
+   * @throws {BkashFeatureNotSupportedError} Auth and capture are not supported in 0.1.x.
    */
-  public async voidPayment(params: VoidPaymentParams): Promise<VoidResult> {
-    if (!this.adapter.voidPayment) {
-      throw new BkashError(`voidPayment is not supported by adapter "${this.adapter.version}".`);
-    }
-    const token = await this.getValidToken();
-    return this.adapter.voidPayment(token, params);
+  public async voidPayment(_params: VoidPaymentParams): Promise<VoidResult> {
+    throw new BkashFeatureNotSupportedError('auth-and-capture');
   }
 
   /**
