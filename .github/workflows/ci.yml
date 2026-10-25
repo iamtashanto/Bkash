@@ -47,5 +47,15 @@ jobs:
       - name: Build Packages
         run: pnpm run build
 
+      - name: Packaging Lint (publint)
+        run: |
+          npx -y publint packages/bkash-server
+          npx -y publint packages/bkash-client
+
+      - name: Type Resolution Verification (attw)
+        run: |
+          npx -y @arethetypeswrong/cli --pack packages/bkash-server
+          npx -y @arethetypeswrong/cli --pack packages/bkash-client
+
       - name: Validate Documentation Website
         run: pnpm run check:website

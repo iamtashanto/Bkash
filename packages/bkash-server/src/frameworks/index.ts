@@ -5,12 +5,13 @@ import { BkashHttpHandler, type BkashHandlerOptions } from '../http/handler.js';
  * Universal Node.js req/res to Web Standard Request converter.
  */
 export async function nodeToWebRequest(req: any): Promise<Request> {
-  const protocol = req.headers['x-forwarded-proto'] || (req.socket?.encrypted ? 'https' : 'http');
-  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
-  const url = `${protocol}://${host}${req.url}`;
+  const headersObj = req?.headers || {};
+  const protocol = headersObj['x-forwarded-proto'] || (req?.socket?.encrypted ? 'https' : 'http');
+  const host = headersObj['x-forwarded-host'] || headersObj.host || 'localhost';
+  const url = `${protocol}://${host}${req?.url || '/'}`;
 
   const headers = new Headers();
-  for (const [key, value] of Object.entries(req.headers)) {
+  for (const [key, value] of Object.entries(headersObj)) {
     if (value) {
       if (Array.isArray(value)) {
         value.forEach((v) => headers.append(key, v));
@@ -20,13 +21,13 @@ export async function nodeToWebRequest(req: any): Promise<Request> {
     }
   }
 
-  const method = req.method || 'GET';
+  const method = req?.method || 'GET';
   let body: any = null;
 
   if (method !== 'GET' && method !== 'HEAD') {
-    if (req.body) {
+    if (req?.body) {
       body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
-    } else {
+    } else if (req && Symbol.asyncIterator in req) {
       const chunks: Buffer[] = [];
       for await (const chunk of req) {
         chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
@@ -85,7 +86,7 @@ export function createExpressHandler(bkash: BkashServer, options?: BkashHandlerO
 export function createFastifyHandler(bkash: BkashServer, options?: BkashHandlerOptions) {
   const handler = new BkashHttpHandler(bkash, options);
   return async (fastifyReq: any, fastifyReply: any) => {
-    const webReq = await nodeToWebRequest(fastifyReq.raw);
+    const webReq = await nodeToWebRequest(fastifyReq.raw || fastifyReq);
     const webRes = await handler.handle(webReq);
     fastifyReply.status(webRes.status);
     webRes.headers.forEach((val, key) => fastifyReply.header(key, val));
@@ -121,7 +122,11 @@ export function createNextHandler(bkash: BkashServer, options?: BkashHandlerOpti
 export function createKoaHandler(bkash: BkashServer, options?: BkashHandlerOptions) {
   const handler = new BkashHttpHandler(bkash, options);
   return async (ctx: any, next?: any) => {
-    const webReq = await nodeToWebRequest(ctx.req);
+    const rawReq = ctx.req || ctx.request;
+    if (ctx.request?.body && !rawReq.body) {
+      rawReq.body = ctx.request.body;
+    }
+    const webReq = await nodeToWebRequest(rawReq);
     const webRes = await handler.handle(webReq);
     if (webRes.status === 404 && next) {
       return next();

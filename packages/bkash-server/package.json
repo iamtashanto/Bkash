@@ -38,8 +38,12 @@
   },
   "typesVersions": {
     "*": {
-      "redis": ["./dist/redis.d.ts"],
-      "frameworks": ["./dist/frameworks.d.ts"]
+      "redis": [
+        "./dist/redis.d.ts"
+      ],
+      "frameworks": [
+        "./dist/frameworks.d.ts"
+      ]
     }
   },
   "sideEffects": false,
@@ -70,6 +74,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.14.0",
+    "@vitest/coverage-v8": "^2.1.9",
     "tsup": "^8.2.4",
     "typescript": "^5.5.4",
     "vitest": "^2.1.3"

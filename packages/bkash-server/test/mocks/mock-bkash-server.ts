@@ -163,6 +163,38 @@ export class MockBkashServer {
             return;
           }
 
+          // Search transaction
+          if (url.includes('/searchTransaction')) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(
+              JSON.stringify({
+                statusCode: '0000',
+                statusMessage: 'Successful',
+                trxID: 'TRX_12345',
+                transactionStatus: 'Completed',
+                amount: '1550.00',
+              })
+            );
+            return;
+          }
+
+          // Refund payment
+          if (url.includes('/payment/refund')) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(
+              JSON.stringify({
+                statusCode: '0000',
+                statusMessage: 'Successful',
+                refundTrxID: 'REF_99998888',
+                originalTrxID: 'TRX_12345',
+                amount: '50.00',
+                currency: 'BDT',
+                transactionStatus: 'Completed',
+              })
+            );
+            return;
+          }
+
           // Default fallback
           res.writeHead(404, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ statusCode: '404', statusMessage: 'Not found' }));
