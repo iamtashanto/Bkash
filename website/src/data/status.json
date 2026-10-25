@@ -15,56 +15,56 @@
       "name": "Tokenized Checkout v1.2.0-beta",
       "category": "Legacy Engine",
       "status": "experimental",
-      "description": "Backward-compatible mapping for legacy v1.2 endpoints and response shapes."
+      "description": "Backward-compatible mapping for legacy v1.2 endpoints and response shapes. Validated against reference integration flow."
     },
     {
       "id": "token-cache",
       "name": "Token Lifecycle Cache & Mutex",
       "category": "Security & Reliability",
       "status": "experimental",
-      "description": "Prevents the catastrophic 2 calls/hr lockout on v2 by caching tokens with proactive 50-minute refresh and single-flight concurrency."
+      "description": "Prevents the catastrophic 2 calls/hr lockout on v2 by caching tokens with proactive 50-minute refresh, single-flight concurrency, and atomic Redis locks."
     },
     {
       "id": "amount-verification",
       "name": "Amount & Invoice Verification Guard",
       "category": "Security & Reliability",
       "status": "experimental",
-      "description": "Cryptographically and numerically verifies that execute response amounts match the initial database invoice before order confirmation."
+      "description": "Strictly verifies that execute response amounts and invoice numbers match the expected order before order confirmation."
     },
     {
       "id": "timeout-reconciliation",
       "name": "Auto-Query Timeout Reconciliation",
       "category": "Security & Reliability",
       "status": "experimental",
-      "description": "Automatically falls back to queryPayment on 30s execute timeouts to prevent zombie transactions."
+      "description": "Automatically falls back to queryPayment on Error 2062 or 30s execute timeouts to recover transaction status."
     },
     {
       "id": "agreements",
       "name": "Agreements & 1-Click Pay",
       "category": "Checkout Experience",
-      "status": "experimental",
-      "description": "Customer account binding and 1-click repeat checkouts requiring PIN entry only."
+      "status": "planned",
+      "description": "Customer account binding and 1-click repeat checkouts requiring PIN entry only. Scheduled for Phase 7."
     },
     {
       "id": "auth-capture",
       "name": "Auth & Capture",
       "category": "Fintech Capabilities",
-      "status": "experimental",
-      "description": "Pre-authorization hold with strictly enforced one-time capture or void."
+      "status": "planned",
+      "description": "Pre-authorization hold with strictly enforced one-time capture or void. Scheduled for Phase 7."
     },
     {
       "id": "refunds",
       "name": "Refunds & Refund Status",
       "category": "Fintech Capabilities",
       "status": "experimental",
-      "description": "Up to 10 partial refunds against the maximum refundable amount within 60 days."
+      "description": "Refund execution via /tokenized/checkout/payment/refund."
     },
     {
       "id": "webhooks-sns",
       "name": "AWS SNS Webhook & Signature Verification",
       "category": "Webhooks & IPN",
       "status": "experimental",
-      "description": "Validates official bKash AWS SNS notifications with X.509 RSA certificate fetching and signature verification."
+      "description": "Validates official bKash AWS SNS notifications with X.509 RSA certificate fetching, replay protection, and signature verification."
     },
     {
       "id": "react-client",
@@ -78,7 +78,7 @@
       "name": "React Native WebView (<BkashCheckout/>)",
       "category": "Client Bindings",
       "status": "experimental",
-      "description": "URL interception, in-app browser mode, and hardware back-button handler."
+      "description": "URL interception and in-app browser mode for React Native and Expo."
     },
     {
       "id": "express-adapter",
@@ -95,6 +95,41 @@
       "description": "App Router and Pages API route handlers."
     },
     {
+      "id": "fastify-adapter",
+      "name": "Fastify Plugin",
+      "category": "Server Adapters",
+      "status": "experimental",
+      "description": "Native Fastify plugin with typed schemas and request converters."
+    },
+    {
+      "id": "hono-adapter",
+      "name": "Hono / Cloudflare Workers Adapter",
+      "category": "Server Adapters",
+      "status": "experimental",
+      "description": "Edge-runtime adapter for Cloudflare Workers, Fastly, and Deno."
+    },
+    {
+      "id": "vue-binding",
+      "name": "Vue 3 Composable",
+      "category": "Client Bindings",
+      "status": "experimental",
+      "description": "useBkash composable for Vue 3 and Nuxt."
+    },
+    {
+      "id": "angular-binding",
+      "name": "Angular Service",
+      "category": "Client Bindings",
+      "status": "experimental",
+      "description": "Plain TypeScript BkashService for Angular applications."
+    },
+    {
+      "id": "svelte-binding",
+      "name": "Svelte Store",
+      "category": "Client Bindings",
+      "status": "experimental",
+      "description": "Readable store wrapper for Svelte 4 and Svelte 5."
+    },
+    {
       "id": "mock-simulator",
       "name": "Local Mock Simulator",
       "category": "Testing & Tooling",
@@ -106,49 +141,21 @@
       "name": "Dynamic Charging v1",
       "category": "Aggregator Features",
       "status": "planned",
-      "description": "Fixed, percentage, and slab-based fee calculation for aggregators and sub-merchants. Scheduled for Phase 4."
+      "description": "Fixed, percentage, and slab-based fee calculation for aggregators and sub-merchants. Scheduled for Phase 7."
     },
     {
       "id": "payouts",
       "name": "Payouts & Disbursements (B2C/B2B)",
       "category": "Disbursements",
       "status": "planned",
-      "description": "Automated salary, vendor, and agent disbursements. Scheduled for Phase 4."
-    },
-    {
-      "id": "vue-binding",
-      "name": "Vue 3 Composable",
-      "category": "Client Bindings",
-      "status": "planned",
-      "description": "Reactive useBkash composable for Vue 3 and Nuxt. Scheduled for Phase 5."
-    },
-    {
-      "id": "angular-binding",
-      "name": "Angular Service",
-      "category": "Client Bindings",
-      "status": "planned",
-      "description": "RxJS-based BkashService for Angular applications. Scheduled for Phase 5."
-    },
-    {
-      "id": "fastify-adapter",
-      "name": "Fastify Plugin",
-      "category": "Server Adapters",
-      "status": "planned",
-      "description": "Native Fastify plugin with typed schemas. Scheduled for Phase 5."
-    },
-    {
-      "id": "hono-adapter",
-      "name": "Hono / Cloudflare Workers Adapter",
-      "category": "Server Adapters",
-      "status": "planned",
-      "description": "Edge-runtime adapter for Cloudflare Workers, Fastly, and Deno. Scheduled for Phase 5."
+      "description": "Automated salary, vendor, and agent disbursements. Scheduled for Phase 7."
     },
     {
       "id": "nest-adapter",
       "name": "NestJS Dynamic Module",
       "category": "Server Adapters",
       "status": "planned",
-      "description": "BkashModule with injectable services and controllers. Scheduled for Phase 5."
+      "description": "BkashModule with injectable services and controllers. Scheduled for Phase 7."
     }
   ]
 }

@@ -1,41 +1,44 @@
-# Release Go / No-Go Checklist
+# Release Readiness Checklist
 
 **Target Release:** `0.1.0-alpha.1` (Dist-Tag: `alpha`)  
 **Package:** `bkash-server`, `bkash-client`  
 **License:** MIT  
+**Current Status:** **AUTOMATED CHECKS ONLY (NOT READY FOR RELEASE)**
 
 ---
 
-## 1. Quality & Compatibility Matrix
+## 1. Automated Verification Matrix
 
-| Category | Verification Item | Status | Evidence / Notes |
-| :--- | :--- | :--- | :--- |
-| **Packaging** | `publint` lint checks | **PASS 🟢** | Verified clean on `bkash-server` and `bkash-client`. |
-| **Types** | `@arethetypeswrong/cli` (attw) | **PASS 🟢** | All resolution modes (`node10`, `node16-cjs`, `node16-esm`, `bundler`) 100% green. |
-| **Resolution** | TypeScript `moduleResolution` | **PASS 🟢** | Verified under `node10`, `node16`, `nodenext`, `bundler` with `strict: true`. |
-| **Tarball** | `npm pack --dry-run` | **PASS 🟢** | Clean whitelist (`dist`, `README.md`, `LICENSE`). No tests/source leaks. |
-| **Secret Scan** | Gitleaks repository scan | **PASS 🟢** | `gitleaks dir -v .` scanned 1.01 MB $\rightarrow$ 0 leaks found. |
-| **Tests** | Vitest Test Suite | **PASS 🟢** | 45 tests passing across 14 test files (12 server, 2 client). |
-| **Runtimes** | Node.js (18, 20, 22), Bun, Deno | **PASS 🟢** | Tested via direct execution in Node, Bun, and Deno (`--allow-env`). |
-| **Package Managers** | npm, pnpm, yarn classic, bun | **PASS 🟢** | Tarball installation & import verified in clean consumer project. |
-| **Version Gate** | Tokenized v2 Adapter | **EXPERIMENTAL** | Mapped and contract tested; experimental pending sandbox credentials. |
-
----
-
-## 2. Security & Policy Verification
-
-- [x] **No Real Credentials:** Zero real keys, passwords, phone numbers, or merchant IDs in repo.
-- [x] **Client Sanitization:** No client project names or internal audit details in tracked files.
-- [x] **Internal Audit Isolated:** `docs/internal/` is gitignored.
-- [x] **Gitleaks Pre-commit Hook:** Installed and verified executable.
-- [x] **CI Pipeline:** `.github/workflows/ci.yml` configured with pinned SHAs.
-- [x] **Branch Protection:** Ready for pull request enforcement on `main`.
+| Verification Item | Tested Environments | Status | Evidence Location |
+| :--- | :--- | :---: | :--- |
+| **Packaging Lint** | `publint` (all exports) | **PASSED** | Clean check in `docs/internal/EVIDENCE.md` |
+| **Type Integrity (attw)** | Node10, Node16 (CJS/ESM), Bundler | **PASSED** | 100% 🟢 table in `docs/internal/EVIDENCE.md` |
+| **Edge / Node-Free Root** | No `@types/node`, `skipLibCheck: false` | **PASSED** | Output in `docs/internal/EVIDENCE.md` |
+| **Package Managers** | npm, pnpm, Yarn Classic, Yarn Berry (NM & PnP), Bun | **PASSED** | Clean install/import outputs in `docs/internal/EVIDENCE.md` |
+| **Runtimes (Local)** | Node.js v24 (macOS), Bun v1.3, Deno v2.9 | **PASSED** | Execution outputs in `docs/internal/EVIDENCE.md` |
+| **Runtimes (CI Matrix)** | Node.js 18, 20, 22 on Ubuntu | **CONFIGURED** | Added to `.github/workflows/ci.yml` |
+| **Real Redis Integration** | Distributed token lock, crash recovery, concurrent execution | **PASSED** | `test/integration/real-redis.test.ts` (localhost:6379) |
+| **Cryptographic Webhook** | Real RSA-SHA256 & RSA-SHA1 signatures with X.509 cert | **PASSED** | `test/unit/webhook-crypto.test.ts` |
+| **Secret Scan (Gitleaks)** | Git history and working tree | **PASSED** | 0 leaks found across 1.91 MB |
 
 ---
 
-## 3. Go / No-Go Decision
+## 2. Gating Items & Open Prerequisites (DO NOT RELEASE UNTIL RESOLVED)
 
-* **Automated Quality Checks:** **GO 🟢**
-* **Publish Approval:** **PENDING USER AUTHORIZATION**
-  - Package will NOT be published until user gives explicit command.
-  - Initial publication will target `@alpha` tag (`0.1.0-alpha.1`), never `latest`.
+| Item | Scope | Status | Notes / Blocker Description |
+| :--- | :--- | :---: | :--- |
+| **Pre-Release Audit Fixes** | Monorepo Core | **OPEN ❌** | Must fix 3 Blockers (sessionStore default, React Native `<div>`, status.json roadmap claims) from `docs/internal/PRE_RELEASE_AUDIT.md`. |
+| **Sandbox E2E Run** | Live Gateway | **OPEN ❌** | Must be executed by human owner using live bKash Merchant Sandbox credentials (v1.2.0-beta). |
+| **Physical Device UX** | Mobile Client | **OPEN ❌** | Must be tested on physical iOS and Android devices for hardware back, orientation, keyboard, and in-app browser cancellation. |
+| **Cloudflare workerd / Edge** | Edge Handlers | **OPEN ❌** | Not yet executed in miniflare/wrangler environment; currently verified via Web standard `handle` tests only. |
+| **Example Apps CI** | Frameworks | **OPEN ❌** | Standalone apps for 10 frameworks (Express, Fastify, Hono, Next.js, SvelteKit, Remix, Astro, Nuxt, NestJS) to be built in separate CI jobs. |
+| **Bangla Copy Review** | i18n | **OPEN ❌** | Needs native-speaker review for all currency formatting, numerals, and translation strings before claims are published. |
+| **External Security Audit** | Threat Model | **OPEN ❌** | Internal audit complete; external pen-test / security review pending. |
+| **Shadow-Mode Dogfooding** | Production | **OPEN ❌** | Rollout in existing production project under shadow mode (logging mismatches without processing real funds). |
+
+---
+
+## 3. Decision
+
+* **Automated Quality Checks:** **PASSED (WITH EVIDENCE)**
+* **Release Approval:** **NO-GO (BLOCKED ON TIER 1 AUDIT FIXES & OWNER SANDBOX E2E)**

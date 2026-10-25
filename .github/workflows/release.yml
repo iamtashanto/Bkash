@@ -1,0 +1,86 @@
+name: Release Packages (Manual Trigger)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dist_tag:
+        description: 'npm dist-tag to publish under (e.g. alpha, beta, latest)'
+        required: true
+        default: 'alpha'
+      dry_run:
+        description: 'Perform dry-run without uploading to npm'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write # Required for npm OIDC trusted provenance publishing
+
+jobs:
+  release:
+    name: Publish to npm (OIDC Provenance)
+    runs-on: ubuntu-latest
+    environment: npm-release # Protected environment requiring human maintainer approval
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Secret Scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@cca674514a6015569d651bc5239e032541a704e6 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fe02b34f77f8bc70b720a8f335c1bb777582f322 # v4.0.0
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@1e60f63c7bc0455ca347c74ed8449c2847c1f964 # v4.0.3
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Run Test Suite
+        run: pnpm run test
+
+      - name: Build Production Bundles
+        run: pnpm run build
+
+      - name: Packaging Lint (publint)
+        run: |
+          npx -y publint packages/bkash-server
+          npx -y publint packages/bkash-client
+
+      - name: Type Resolution Verification (attw)
+        run: |
+          npx -y @arethetypeswrong/cli --pack packages/bkash-server
+          npx -y @arethetypeswrong/cli --pack packages/bkash-client
+
+      - name: Publish bkash-server
+        run: |
+          cd packages/bkash-server
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            npm publish --dry-run --tag ${{ inputs.dist_tag }}
+          else
+            npm publish --access public --tag ${{ inputs.dist_tag }} --provenance
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish bkash-client
+        run: |
+          cd packages/bkash-client
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            npm publish --dry-run --tag ${{ inputs.dist_tag }}
+          else
+            npm publish --access public --tag ${{ inputs.dist_tag }} --provenance
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
