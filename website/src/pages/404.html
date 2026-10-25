@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    {{> head}}
+  </head>
+  <body class="min-h-screen flex flex-col bg-surface-base text-txt-primary">
+    {{> navbar}}
+
+    <main
+      id="main-content"
+      class="flex-grow flex items-center justify-center py-20 px-4"
+    >
+      <div class="max-w-md w-full text-center space-y-6">
+        <div
+          class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent-subtle text-accent-primary font-mono text-2xl font-bold shadow-card"
+        >
+          404
+        </div>
+
+        <div class="space-y-2">
+          <h1
+            class="text-2xl sm:text-3xl font-extrabold text-txt-primary"
+            data-en="Page Not Found"
+            data-bn="পৃষ্ঠাটি পাওয়া যায়নি"
+          >
+            Page Not Found
+          </h1>
+          <p
+            class="text-sm text-txt-secondary leading-relaxed"
+            data-en="The documentation or resource you are looking for does not exist or has been relocated."
+            data-bn="আপনি যে ডকুমেন্টেশন বা রিসোর্স খুঁজছেন তা বিদ্যমান নেই অথবা অন্য কোথাও সরানো হয়েছে।"
+          >
+            The documentation or resource you are looking for does not exist or
+            has been relocated.
+          </p>
+        </div>
+
+        <div class="pt-2">
+          <a
+            href="{{BASE_PATH}}"
+            class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-accent-primary hover:bg-accent-hover text-white text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-accent-primary shadow-card"
+          >
+            &larr;
+            <span
+              class="ml-1.5"
+              data-en="Return to Home"
+              data-bn="হোমে ফিরে যান"
+              >Return to Home</span
+            >
+          </a>
+        </div>
+      </div>
+    </main>
+
+    {{> footer}}
+
+    <script type="module" src="{{BASE_PATH}}js/main.js"></script>
+  </body>
+</html>

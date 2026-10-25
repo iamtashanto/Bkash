@@ -1,0 +1,97 @@
+name: Deploy Website to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - '.github/workflows/pages.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build & Verify Website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Secret Scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@cca674514a6015569d651bc5239e032541a704e6 # v2.3.9
+        continue-on-error: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fe02b34f77f8bc70b720a8f335c1bb777582f322 # v4.0.0
+        with:
+          version: 12.3.4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@1e60f63c7bc0455ca347c74ed8449c2847c1f964 # v4.2.0
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure GitHub Pages
+        id: pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+
+      - name: Build CSS & Website
+        env:
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+          SITE_INDEXABLE: 'false'
+        run: pnpm --filter bkash-website build
+
+      - name: Verify Code Formatting (Prettier)
+        run: pnpm --filter bkash-website check:format
+
+      - name: Verify HTML Output (html-validate)
+        run: pnpm --filter bkash-website check:html
+
+      - name: Verify Internal Links (Base-Path Aware)
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+        run: pnpm --filter bkash-website check:links
+
+      - name: Audit Performance & A11y (Lighthouse CI)
+        run: npx @lhci/cli@0.14.x autorun --config=./website/lighthouserc.json
+        continue-on-error: true # Non-blocking on initial PRs, reported in job step
+
+      - name: Upload Pages Artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: website/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

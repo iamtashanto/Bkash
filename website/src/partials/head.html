@@ -1,0 +1,61 @@
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{{PAGE_TITLE}} — bkash-server &amp; bkash-client</title>
+<meta name="description" content="{{PAGE_DESCRIPTION}}" />
+
+<!-- Canonical & Base-Path URLs -->
+<link rel="canonical" href="{{PAGE_CANONICAL}}" />
+
+<!-- Indexability Control -->
+{{ROBOTS_META}}
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="{{PAGE_CANONICAL}}" />
+<meta property="og:title" content="{{PAGE_TITLE}}" />
+<meta property="og:description" content="{{PAGE_DESCRIPTION}}" />
+<meta
+  property="og:image"
+  content="{{SITE_URL}}{{BASE_PATH}}assets/og-image.png"
+/>
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{PAGE_TITLE}}" />
+<meta name="twitter:description" content="{{PAGE_DESCRIPTION}}" />
+<meta
+  name="twitter:image"
+  content="{{SITE_URL}}{{BASE_PATH}}assets/og-image.png"
+/>
+
+<!-- Google Fonts (Inter + Hind Siliguri for Bangla) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+  rel="stylesheet"
+/>
+
+<!-- Zero-FOUC Theme Initialization Script -->
+<script>
+  (function () {
+    try {
+      var savedTheme = localStorage.getItem("theme");
+      var prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      var savedLang = localStorage.getItem("site_lang");
+      if (savedLang) {
+        document.documentElement.setAttribute("lang", savedLang);
+      }
+    } catch (e) {}
+  })();
+</script>
+
+<!-- Compiled Tailwind CSS -->
+<link rel="stylesheet" href="{{BASE_PATH}}css/styles.css" />

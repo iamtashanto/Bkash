@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    {{> head}}
+  </head>
+  <body class="min-h-screen flex flex-col bg-surface-base text-txt-primary">
+    {{> navbar}}
+
+    <main id="main-content" class="flex-grow">
+      <!-- Hero Section -->
+      <section
+        class="relative overflow-hidden pt-12 pb-20 sm:pt-20 sm:pb-28 border-b border-border-subtle bg-gradient-to-b from-surface to-surface-base"
+      >
+        <!-- Background subtle glow decoration -->
+        <div
+          class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-accent-glow rounded-full blur-[100px] pointer-events-none opacity-40 dark:opacity-20"
+        ></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div class="max-w-3xl mx-auto text-center space-y-6">
+            <!-- Pre-release Badge -->
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent-border/60 bg-accent-subtle text-accent-primary text-xs font-semibold"
+            >
+              <span
+                class="w-2 h-2 rounded-full bg-accent-primary animate-pulse"
+              ></span>
+              <span
+                data-en="Pre-Release v0.1.0-alpha — Active Development"
+                data-bn="প্রি-রিলিজ v0.1.0-alpha — সক্রিয় উন্নয়নাধীন"
+              >
+                Pre-Release v0.1.0-alpha — Active Development
+              </span>
+            </div>
+
+            <!-- Main Heading -->
+            <h1
+              class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-txt-primary leading-tight"
+            >
+              <span
+                data-en="Type-Safe, Production-Hardened"
+                data-bn="টাইপ-নিরাপদ ও প্রোডাকশন-রেডি"
+                >Type-Safe, Production-Hardened</span
+              >
+              <span
+                class="block bg-gradient-to-r from-accent-primary to-accent-hover bg-clip-text text-transparent"
+              >
+                bKash Payment SDK
+              </span>
+            </h1>
+
+            <!-- Value Proposition -->
+            <p
+              class="text-base sm:text-lg text-txt-secondary leading-relaxed max-w-2xl mx-auto"
+              data-en="The modern, zero-dependency TypeScript library for Bangladesh's bKash gateway. Built-in proactive token caching, double-execution guards, amount verification, and multi-framework client bindings."
+              data-bn="বাংলাদেশের বিকাশ গেটওয়ের জন্য আধুনিক, জিরো-ডিপেনডেন্সি টাইপস্ক্রিপ্ট লাইব্রেরি। বিল্ট-ইন টোকেন ক্যাশিং, ডাবল-এক্সিকিউশন গার্ড, টাকার পরিমাণ যাচাইকরণ এবং মাল্টি-ফ্রেমওয়ার্ক ক্লায়েন্ট বাইন্ডিংস।"
+            >
+              The modern, zero-dependency TypeScript library for Bangladesh's
+              bKash gateway. Built-in proactive token caching, double-execution
+              guards, amount verification, and multi-framework client bindings.
+            </p>
+
+            <!-- Install Box (With Pre-release Notice) -->
+            <div class="pt-4 max-w-md mx-auto">
+              <div
+                class="rounded-xl border border-border-strong bg-surface-code text-white p-2.5 shadow-card text-left"
+              >
+                <div
+                  class="flex items-center justify-between text-xs text-slate-400 px-2 pb-1.5 border-b border-slate-800"
+                >
+                  <span class="font-mono">Terminal (pnpm / npm)</span>
+                  <span
+                    class="text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30"
+                  >
+                    Pre-release
+                  </span>
+                </div>
+                <div class="flex items-center justify-between px-2 pt-2">
+                  <code
+                    id="install-cmd"
+                    class="font-mono text-xs sm:text-sm text-emerald-400 selection:bg-emerald-900 selection:text-white"
+                  >
+                    pnpm add bkash-server bkash-client
+                  </code>
+                  <button
+                    type="button"
+                    data-copy-target="install-cmd"
+                    aria-label="Copy install command"
+                    class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-accent-primary"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+              <p
+                class="text-[11px] text-txt-muted mt-2 text-center"
+                data-en="Note: Package names will be published upon v0.1.0 release completion. Under active local scaffolding."
+                data-bn="নোট: v0.1.0 রিলিজ সম্পন্ন হলে প্যাকেজটি এনপিএম রেজিস্ট্রিতে প্রকাশিত হবে। বর্তমানে লোকাল ডেভেলপমেন্টাধীন।"
+              >
+                Note: Package names will be published upon v0.1.0 release
+                completion. Under active local scaffolding.
+              </p>
+            </div>
+
+            <!-- CTAs -->
+            <div
+              class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3"
+            >
+              <a
+                href="#quickstart"
+                class="w-full sm:w-auto px-6 py-3 rounded-xl bg-accent-primary hover:bg-accent-hover text-white text-sm font-semibold shadow-card transition-all focus-visible:ring-2 focus-visible:ring-accent-primary"
+              >
+                <span
+                  data-en="Explore 10-Line Quickstart"
+                  data-bn="১০ লাইনের কুইকস্টার্ট দেখুন"
+                  >Explore 10-Line Quickstart</span
+                >
+                &darr;
+              </a>
+              <a
+                href="https://github.com/iamtashanto/Bkash"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full sm:w-auto px-6 py-3 rounded-xl border border-border-strong bg-surface hover:bg-surface-elevated text-txt-primary text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-accent-primary"
+              >
+                <span
+                  data-en="View Source &amp; Roadmap"
+                  data-bn="সোর্স কোড এবং রোডম্যাপ"
+                  >View Source &amp; Roadmap</span
+                >
+                &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sequence & Lifecycle Flow Diagram Section -->
+      <section
+        id="architecture"
+        class="py-16 sm:py-24 border-b border-border-subtle bg-surface"
+      >
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="max-w-2xl mx-auto text-center space-y-3 mb-12">
+            <h2
+              class="text-2xl sm:text-3xl font-bold tracking-tight text-txt-primary"
+              data-en="Architected for Uncompromising Safety"
+              data-bn="আপসহীন নিরাপত্তার জন্য নির্মিত আর্কিটেকচার"
+            >
+              Architected for Uncompromising Safety
+            </h2>
+            <p
+              class="text-sm sm:text-base text-txt-secondary leading-relaxed"
+              data-en="How bkash-server and bkash-client orchestrate secure payments without exposing customer wallet credentials."
+              data-bn="গ্রাহকের ওয়ালেট ক্রেডেনশিয়াল প্রকাশ না করে কীভাবে bkash-server এবং bkash-client নিরাপদ পেমেন্ট সম্পন্ন করে।"
+            >
+              How bkash-server and bkash-client orchestrate secure payments
+              without exposing customer wallet credentials.
+            </p>
+          </div>
+
+          <!-- Inline Accessible SVG Flow Diagram -->
+          <div
+            class="rounded-2xl border border-border-subtle bg-surface-base p-4 sm:p-8 shadow-card overflow-x-auto"
+          >
+            <div class="min-w-[680px] max-w-4xl mx-auto">
+              <svg
+                class="w-full h-auto text-txt-primary"
+                viewBox="0 0 840 280"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!-- Background Grid Guide -->
+                <rect
+                  width="840"
+                  height="280"
+                  rx="12"
+                  fill="currentColor"
+                  fill-opacity="0.02"
+                ></rect>
+
+                <!-- Step 1: Client Checkout -->
+                <rect
+                  x="20"
+                  y="80"
+                  width="160"
+                  height="120"
+                  rx="10"
+                  class="stroke-border-strong fill-surface"
+                  stroke-width="1.5"
+                ></rect>
+                <circle
+                  cx="100"
+                  cy="115"
+                  r="16"
+                  class="fill-accent-subtle stroke-accent-primary"
+                  stroke-width="1.5"
+                ></circle>
+                <text
+                  x="100"
+                  y="120"
+                  text-anchor="middle"
+                  class="fill-accent-primary font-bold text-xs"
+                >
+                  1
+                </text>
+                <text
+                  x="100"
+                  y="150"
+                  text-anchor="middle"
+                  class="fill-txt-primary font-semibold text-xs"
+                >
+                  Client Checkout
+                </text>
+                <text
+                  x="100"
+                  y="170"
+                  text-anchor="middle"
+                  class="fill-txt-muted text-[10px]"
+                >
+                  useBkash() / SDK
+                </text>
+
+                <!-- Arrow 1 -> 2 -->
+                <path
+                  d="M180 140 H235"
+                  class="stroke-accent-primary"
+                  stroke-width="2"
+                  stroke-dasharray="4 2"
+                ></path>
+                <polygon
+                  points="235,136 245,140 235,144"
+                  class="fill-accent-primary"
+                ></polygon>
+                <text
+                  x="210"
+                  y="130"
+                  text-anchor="middle"
+                  class="fill-txt-muted text-[9px] font-mono"
+                >
+                  Create
+                </text>
+
+                <!-- Step 2: Merchant Server -->
+                <rect
+                  x="245"
+                  y="80"
+                  width="160"
+                  height="120"
+                  rx="10"
+                  class="stroke-accent-border fill-surface shadow-sm"
+                  stroke-width="2"
+                ></rect>
+                <circle
+                  cx="325"
+                  cy="115"
+                  r="16"
+                  class="fill-accent-primary"
+                ></circle>
+                <text
+                  x="325"
+                  y="120"
+                  text-anchor="middle"
+                  class="fill-white font-bold text-xs"
+                >
+                  2
+                </text>
+                <text
+                  x="325"
+                  y="150"
+                  text-anchor="middle"
+                  class="fill-txt-primary font-semibold text-xs"
+                >
+                  Merchant Server
+                </text>
+                <text
+                  x="325"
+                  y="168"
+                  text-anchor="middle"
+                  class="fill-accent-primary text-[10px] font-medium"
+                >
+                  Cached Token Mutex
+                </text>
+                <text
+                  x="325"
+                  y="182"
+                  text-anchor="middle"
+                  class="fill-txt-muted text-[9px] font-mono"
+                >
+                  &lt;2 calls/hr limit safe
+                </text>
+
+                <!-- Arrow 2 -> 3 -->
+                <path
+                  d="M405 140 H460"
+                  class="stroke-accent-primary"
+                  stroke-width="2"
+                ></path>
+                <polygon
+                  points="460,136 470,140 460,144"
+                  class="fill-accent-primary"
+                ></polygon>
+                <text
+                  x="435"
+                  y="130"
+                  text-anchor="middle"
+                  class="fill-txt-muted text-[9px] font-mono"
+                >
+                  API v2
+                </text>
+
+                <!-- Step 3: bKash Hosted Gateway -->
+                <rect
+                  x="470"
+                  y="80"
+                  width="160"
+                  height="120"
+                  rx="10"
+                  class="stroke-border-strong fill-surface"
+                  stroke-width="1.5"
+                ></rect>
+                <circle
+                  cx="550"
+                  cy="115"
+                  r="16"
+                  class="fill-emerald-500/10 stroke-emerald-500"
+                  stroke-width="1.5"
+                ></circle>
+                <text
+                  x="550"
+                  y="120"
+                  text-anchor="middle"
+                  class="fill-emerald-600 font-bold text-xs"
+                >
+                  3
+                </text>
+                <text
+                  x="550"
+                  y="150"
+                  text-anchor="middle"
+                  class="fill-txt-primary font-semibold text-xs"
+                >
+                  bKash Hosted Portal
+                </text>
+                <text
+                  x="550"
+                  y="168"
+                  text-anchor="middle"
+                  class="fill-emerald-600 dark:fill-emerald-400 text-[10px] font-semibold"
+                >
+                  User OTP &amp; PIN
+                </text>
+                <text
+                  x="550"
+                  y="182"
+                  text-anchor="middle"
+                  class="fill-txt-muted text-[9px]"
+                >
+                  Credentials stay here
+                </text>
+
+                <!-- Arrow 3 -> 4 -->
+                <path
+                  d="M630 140 H675"
+                  class="stroke-accent-primary"
+                  stroke-width="2"
+                  stroke-dasharray="4 2"
+                ></path>
+                <polygon
+                  points="675,136 685,140 675,144"
+                  class="fill-accent-primary"
+                ></polygon>
+                <text
+                  x="655"
+                  y="130"
+                  text-anchor="middle"
+                  class="fill-txt-muted text-[9px] font-mono"
+                >
+                  Callback
+                </text>
+
+                <!-- Step 4: Verification & Execute -->
+                <rect
+                  x="685"
+                  y="80"
+                  width="140"
+                  height="120"
+                  rx="10"
+                  class="stroke-emerald-500/40 fill-surface"
+                  stroke-width="1.5"
+                ></rect>
+                <circle
+                  cx="755"
+                  cy="115"
+                  r="16"
+                  class="fill-emerald-500"
+                ></circle>
+                <text
+                  x="755"
+                  y="120"
+                  text-anchor="middle"
+                  class="fill-white font-bold text-xs"
+                >
+                  4
+                </text>
+                <text
+                  x="755"
+                  y="150"
+                  text-anchor="middle"
+                  class="fill-txt-primary font-semibold text-xs"
+                >
+                  Verification Guard
+                </text>
+                <text
+                  x="755"
+                  y="168"
+                  text-anchor="middle"
+                  class="fill-emerald-600 dark:fill-emerald-400 text-[10px] font-mono"
+                >
+                  Amount == DB
+                </text>
+                <text
+                  x="755"
+                  y="182"
+                  text-anchor="middle"
+                  class="fill-txt-muted text-[9px] font-mono"
+                >
+                  Idempotent Lock
+                </text>
+
+                <!-- Explanatory Legend / Labels -->
+                <text
+                  x="420"
+                  y="240"
+                  text-anchor="middle"
+                  class="fill-txt-muted text-[11px]"
+                >
+                  Zero customer credentials (OTP / PIN) ever touch merchant
+                  servers or JavaScript SDK client code.
+                </text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10-Line Quickstart Section -->
+      <section
+        id="quickstart"
+        class="py-16 sm:py-24 border-b border-border-subtle bg-surface-base"
+      >
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="max-w-2xl mx-auto text-center space-y-3 mb-10">
+            <h2
+              class="text-2xl sm:text-3xl font-bold tracking-tight text-txt-primary"
+              data-en="10-Line Quickstart"
+              data-bn="১০ লাইনের কুইকস্টার্ট"
+            >
+              10-Line Quickstart
+            </h2>
+            <p
+              class="text-sm sm:text-base text-txt-secondary"
+              data-en="Setup your payment gateway in seconds with zero boilerplate and full TypeScript autocompletion."
+              data-bn="কয়েক সেকেন্ডের মধ্যে শূন্য বয়লারপ্লেট এবং সম্পূর্ণ টাইপস্ক্রিপ্ট অটো-কমপ্লিশন সহ গেটওয়ে সেটআপ করুন।"
+            >
+              Setup your payment gateway in seconds with zero boilerplate and
+              full TypeScript autocompletion.
+            </p>
+          </div>
+
+          <!-- Framework Tab Selector -->
+          <div class="max-w-4xl mx-auto">
+            <div
+              class="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border-subtle mb-6"
+              role="tablist"
+            >
+              <button
+                type="button"
+                role="tab"
+                data-framework-tab="express"
+                aria-selected="true"
+                class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+              >
+                Node / Express
+              </button>
+              <button
+                type="button"
+                role="tab"
+                data-framework-tab="next"
+                aria-selected="false"
+                class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+              >
+                Next.js (App Router)
+              </button>
+              <button
+                type="button"
+                role="tab"
+                data-framework-tab="react"
+                aria-selected="false"
+                class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+              >
+                React (useBkash)
+              </button>
+              <button
+                type="button"
+                role="tab"
+                data-framework-tab="react-native"
+                aria-selected="false"
+                class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+              >
+                React Native (WebView)
+              </button>
+              <button
+                type="button"
+                role="tab"
+                data-framework-tab="vue"
+                aria-selected="false"
+                class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium text-txt-muted hover:text-txt-secondary transition-colors"
+              >
+                Vue
+                <span
+                  class="text-[9px] uppercase px-1 py-0.2 rounded bg-surface border border-border-subtle ml-1"
+                  >Planned</span
+                >
+              </button>
+              <button
+                type="button"
+                role="tab"
+                data-framework-tab="angular"
+                aria-selected="false"
+                class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium text-txt-muted hover:text-txt-secondary transition-colors"
+              >
+                Angular
+                <span
+                  class="text-[9px] uppercase px-1 py-0.2 rounded bg-surface border border-border-subtle ml-1"
+                  >Planned</span
+                >
+              </button>
+            </div>
+
+            <!-- Express Panel -->
+            <div data-framework-panel="express" class="space-y-4">
+              <div
+                class="rounded-xl border border-border-strong bg-surface-code text-white overflow-hidden shadow-card"
+              >
+                <div
+                  class="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-900/60 text-xs text-slate-400"
+                >
+                  <span class="font-mono">server.ts (Express)</span>
+                  <button
+                    type="button"
+                    data-copy-target="code-express"
+                    class="text-slate-300 hover:text-white font-medium"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <pre
+                  class="p-4 text-xs sm:text-sm font-mono overflow-x-auto text-slate-200"
+                ><code id="code-express">import express from "express";
+import { createBkash } from "bkash-server";
+import { createExpressAdapter } from "bkash-server/express";
+
+const app = express();
+app.use(express.json());
+
+// Initialize bKash SDK with zero-config (reads process.env.BKASH_*)
+const bkash = createBkash();
+
+// Mount automatic /create, /callback, and /webhook endpoints
+app.use("/api/payment/bkash", createExpressAdapter(bkash, {
+  async onPaymentSuccess({ paymentId, trxId, amount, invoiceNumber }) {
+    console.log(`Payment confirmed: ${invoiceNumber} | Trx: ${trxId} | ৳${amount}`);
+  }
+}));
+
+app.listen(3000, () =&gt; console.log("Server running on port 3000"));</code></pre>
+              </div>
+            </div>
+
+            <!-- Next.js Panel -->
+            <div data-framework-panel="next" class="hidden space-y-4">
+              <div
+                class="rounded-xl border border-border-strong bg-surface-code text-white overflow-hidden shadow-card"
+              >
+                <div
+                  class="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-900/60 text-xs text-slate-400"
+                >
+                  <span class="font-mono"
+                    >app/api/payment/bkash/[...route]/route.ts</span
+                  >
+                  <button
+                    type="button"
+                    data-copy-target="code-next"
+                    class="text-slate-300 hover:text-white font-medium"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <pre
+                  class="p-4 text-xs sm:text-sm font-mono overflow-x-auto text-slate-200"
+                ><code id="code-next">import { createBkash } from "bkash-server";
+import { createNextRouteHandler } from "bkash-server/next";
+
+const bkash = createBkash();
+
+export const { GET, POST } = createNextRouteHandler(bkash, {
+  async onPaymentSuccess({ paymentId, trxId, amount, invoiceNumber }) {
+    // Automatically called only AFTER cryptographically verifying amount and invoice
+    await fulfillOrder({ invoiceNumber, trxId, amount });
+  }
+});</code></pre>
+              </div>
+            </div>
+
+            <!-- React Panel -->
+            <div data-framework-panel="react" class="hidden space-y-4">
+              <div
+                class="rounded-xl border border-border-strong bg-surface-code text-white overflow-hidden shadow-card"
+              >
+                <div
+                  class="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-900/60 text-xs text-slate-400"
+                >
+                  <span class="font-mono">CheckoutButton.tsx (React)</span>
+                  <button
+                    type="button"
+                    data-copy-target="code-react"
+                    class="text-slate-300 hover:text-white font-medium"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <pre
+                  class="p-4 text-xs sm:text-sm font-mono overflow-x-auto text-slate-200"
+                ><code id="code-react">import { useBkash } from "bkash-client/react";
+
+export function CheckoutButton({ invoiceId, amount }: { invoiceId: string; amount: number }) {
+  const { initiateCheckout, isLoading, error } = useBkash({
+    createEndpoint: "/api/payment/bkash/create",
+    onSuccess: (data) =&gt; alert(`Payment successful: ${data.trxId}`),
+    onError: (err) =&gt; alert(`Failed: ${err.message}`)
+  });
+
+  return (
+    &lt;button onClick={() =&gt; initiateCheckout({ invoiceId, amount })} disabled={isLoading}&gt;
+      {isLoading ? "Redirecting..." : `Pay ৳${amount} with bKash`}
+    &lt;/button&gt;
+  );
+}</code></pre>
+              </div>
+            </div>
+
+            <!-- React Native Panel -->
+            <div data-framework-panel="react-native" class="hidden space-y-4">
+              <div
+                class="rounded-xl border border-border-strong bg-surface-code text-white overflow-hidden shadow-card"
+              >
+                <div
+                  class="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-900/60 text-xs text-slate-400"
+                >
+                  <span class="font-mono">BkashScreen.tsx (React Native)</span>
+                  <button
+                    type="button"
+                    data-copy-target="code-rn"
+                    class="text-slate-300 hover:text-white font-medium"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <pre
+                  class="p-4 text-xs sm:text-sm font-mono overflow-x-auto text-slate-200"
+                ><code id="code-rn">import React from "react";
+import { BkashCheckout } from "bkash-client/react-native";
+
+export function NativeCheckoutScreen({ route, navigation }: any) {
+  return (
+    &lt;BkashCheckout
+      paymentUrl={route.params.bkashURL}
+      callbackUrl="https://api.example.com/api/payment/bkash/callback"
+      onSuccess={(result) =&gt; navigation.replace("OrderSuccess", { trxId: result.trxId })}
+      onCancel={() =&gt; navigation.goBack()}
+      onError={(err) =&gt; alert(err.message)}
+    /&gt;
+  );
+}</code></pre>
+              </div>
+            </div>
+
+            <!-- Vue Panel -->
+            <div data-framework-panel="vue" class="hidden space-y-4">
+              <div
+                class="rounded-xl border border-dashed border-border-strong bg-surface p-8 text-center text-txt-secondary"
+              >
+                <p class="font-semibold text-txt-primary">
+                  Vue 3 Composable Scheduled for Phase 5
+                </p>
+                <p class="text-xs text-txt-muted mt-1">
+                  Reactive useBkash() composable will be published upon core
+                  stability.
+                </p>
+              </div>
+            </div>
+
+            <!-- Angular Panel -->
+            <div data-framework-panel="angular" class="hidden space-y-4">
+              <div
+                class="rounded-xl border border-dashed border-border-strong bg-surface p-8 text-center text-txt-secondary"
+              >
+                <p class="font-semibold text-txt-primary">
+                  Angular Service Scheduled for Phase 5
+                </p>
+                <p class="text-xs text-txt-muted mt-1">
+                  RxJS-based BkashService will be published upon core stability.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Why This Package Section (Audit Breakdown) -->
+      <section class="py-16 sm:py-24 border-b border-border-subtle bg-surface">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="max-w-2xl mx-auto text-center space-y-3 mb-12">
+            <h2
+              class="text-2xl sm:text-3xl font-bold tracking-tight text-txt-primary"
+              data-en="Why This Library?"
+              data-bn="কেন এই লাইব্রেরি?"
+            >
+              Why This Library?
+            </h2>
+            <p
+              class="text-sm sm:text-base text-txt-secondary"
+              data-en="How we eliminate the critical traps that cause traditional bKash integrations to fail in production."
+              data-bn="কীভাবে আমরা প্রথাগত বিকাশ ইন্টিগ্রেশনের মারাত্মক ত্রুটিসমূহ দূর করে নির্ভরযোগ্যতা নিশ্চিত করি।"
+            >
+              How we eliminate the critical traps that cause traditional bKash
+              integrations to fail in production.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1 -->
+            <div
+              class="rounded-xl border border-border-subtle bg-surface-base p-6 space-y-3 shadow-card"
+            >
+              <div
+                class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold"
+              >
+                ⏱
+              </div>
+              <h3
+                class="text-base font-bold text-txt-primary"
+                data-en="2 Calls/Hour Lockout Shield"
+                data-bn="২ কল/ঘন্টা রেট-লিমিট শিল্ড"
+              >
+                2 Calls/Hour Lockout Shield
+              </h3>
+              <p
+                class="text-xs text-txt-secondary leading-relaxed"
+                data-en="bKash Tokenized v2 enforces a strict limit of max 2 calls/hr to grant-token. Standard scripts make 2 calls per checkout and crash by the second user. Our SDK proactively caches tokens and rotates via refresh-token."
+                data-bn="বিকাশ v2 টোকেন গ্র্যান্টে প্রতি ঘণ্টায় মাত্র ২টি কল অনুমোদন করে। সাধারণ স্ক্রিপ্ট প্রতিটি পেমেন্টে টোকেন চেয়ে অ্যাকাউন্ট লক করে ফেলে। আমাদের এসডিকে স্মার্টলি টোকেন ক্যাশ এবং রোটেট করে।"
+              >
+                bKash Tokenized v2 enforces a strict limit of max 2 calls/hr to
+                grant-token. Standard scripts make 2 calls per checkout and
+                crash by the second user. Our SDK proactively caches tokens and
+                rotates via refresh-token.
+              </p>
+            </div>
+
+            <!-- Card 2 -->
+            <div
+              class="rounded-xl border border-border-subtle bg-surface-base p-6 space-y-3 shadow-card"
+            >
+              <div
+                class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold"
+              >
+                ✓
+              </div>
+              <h3
+                class="text-base font-bold text-txt-primary"
+                data-en="Enforced Amount Verification"
+                data-bn="বাধ্যতামূলক অর্থ যাচাই"
+              >
+                Enforced Amount Verification
+              </h3>
+              <p
+                class="text-xs text-txt-secondary leading-relaxed"
+                data-en="Never trust a callback blindly. Our adapters numerically verify execute amounts against initial invoices and reject manipulated transactions before firing order fulfillment events."
+                data-bn="কলব্যাকে অন্ধের মতো ভরসা করা বন্ধ করুন। আমাদের অ্যাডাপ্টার ডেটাবেজের বিলকৃত অংকের সাথে এক্সিকিউট করা অংক পুরোপুরি মিলিয়ে তবেই অর্ডার নিশ্চিত করে।"
+              >
+                Never trust a callback blindly. Our adapters numerically verify
+                execute amounts against initial invoices and reject manipulated
+                transactions before firing order fulfillment events.
+              </p>
+            </div>
+
+            <!-- Card 3 -->
+            <div
+              class="rounded-xl border border-border-subtle bg-surface-base p-6 space-y-3 shadow-card"
+            >
+              <div
+                class="w-10 h-10 rounded-lg bg-accent-subtle text-accent-primary flex items-center justify-center font-bold"
+              >
+                ⚡
+              </div>
+              <h3
+                class="text-base font-bold text-txt-primary"
+                data-en="Idempotency &amp; Auto-Query"
+                data-bn="আইডেমপোটেন্সি ও অটো-কোয়েরি"
+              >
+                Idempotency &amp; Auto-Query
+              </h3>
+              <p
+                class="text-xs text-txt-secondary leading-relaxed"
+                data-en="Eliminates the dreaded bKash 2062 duplicate error on fast user refreshes. Automatically runs queryPayment on 30s timeouts to prevent money-deducted zombie states."
+                data-bn="ব্যবহারকারীর দ্রুত রিফ্রেশে বিকাশের ২০৬২ ডুপ্লিকেট এরর দূর করে। ৩০ সেকেন্ডের টাইমআউটে অটো-কোয়েরি চালিয়ে 'টাকা কেটেছে কিন্তু অর্ডার হয়নি' সংকট রোধ করে।"
+              >
+                Eliminates the dreaded bKash 2062 duplicate error on fast user
+                refreshes. Automatically runs queryPayment on 30s timeouts to
+                prevent money-deducted zombie states.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Data-Driven Feature Status & Roadmap Section -->
+      <section
+        id="status"
+        class="py-16 sm:py-24 border-b border-border-subtle bg-surface-base"
+      >
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="max-w-2xl mx-auto text-center space-y-3 mb-10">
+            <div
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border-subtle text-xs font-semibold text-txt-muted"
+            >
+              <span>Data Source:</span>
+              <code class="font-mono text-accent-primary">status.json</code>
+            </div>
+            <h2
+              class="text-2xl sm:text-3xl font-bold tracking-tight text-txt-primary"
+              data-en="Feature Status &amp; Implementation Matrix"
+              data-bn="ফিচার স্ট্যাটাস এবং বাস্তবায়ন মেট্রিক্স"
+            >
+              Feature Status &amp; Implementation Matrix
+            </h2>
+            <p
+              class="text-sm text-txt-secondary"
+              data-en="Transparent roadmap. Nothing is marked stable until live sandbox E2E verification completes."
+              data-bn="স্বচ্ছ রোডম্যাপ। লাইভ স্যান্ডবক্স E2E ভ্যালিডেশন সম্পন্ন না হওয়া পর্যন্ত কোনো ফিচার স্ট্যাবল বলা হবে না।"
+            >
+              Transparent roadmap. Nothing is marked stable until live sandbox
+              E2E verification completes.
+            </p>
+          </div>
+
+          <!-- Dynamic Status Table / Cards -->
+          <div
+            class="rounded-xl border border-border-subtle bg-surface overflow-hidden shadow-card"
+          >
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead
+                  class="bg-surface-elevated/70 border-b border-border-subtle text-txt-muted uppercase font-semibold text-[10px] tracking-wider"
+                >
+                  <tr>
+                    <th scope="col" class="py-3.5 px-4 sm:px-6">Feature</th>
+                    <th scope="col" class="py-3.5 px-4 sm:px-6">Category</th>
+                    <th scope="col" class="py-3.5 px-4 sm:px-6">Status</th>
+                    <th scope="col" class="py-3.5 px-4 sm:px-6">
+                      Technical Scope
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-border-subtle text-txt-secondary">
+                  <tr>
+                    <td
+                      class="py-3.5 px-4 sm:px-6 font-semibold text-txt-primary"
+                    >
+                      Tokenized Checkout v2
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6">Core Engine</td>
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                      >
+                        experimental
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
+                      /auth/grant-token, /payment/create, /payment/execute
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      class="py-3.5 px-4 sm:px-6 font-semibold text-txt-primary"
+                    >
+                      Token Cache &amp; Mutex
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6">Reliability</td>
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                      >
+                        experimental
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
+                      50-min proactive rotation; single-flight concurrency lock
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      class="py-3.5 px-4 sm:px-6 font-semibold text-txt-primary"
+                    >
+                      Amount &amp; Invoice Guard
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6">Security</td>
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                      >
+                        experimental
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
+                      Rejects price tampering and invoice mismatch attacks
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      class="py-3.5 px-4 sm:px-6 font-semibold text-txt-primary"
+                    >
+                      Agreements &amp; 1-Click Pay
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6">Checkout</td>
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                      >
+                        experimental
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
+                      Modes 0000 / 0001; Saved wallet repeat checkout
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      class="py-3.5 px-4 sm:px-6 font-semibold text-txt-primary"
+                    >
+                      Auth &amp; Capture
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6">Fintech</td>
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                      >
+                        experimental
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
+                      One-time capture guarantee &amp; auto-void reconciliation
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      class="py-3.5 px-4 sm:px-6 font-semibold text-txt-primary"
+                    >
+                      Refunds &amp; Status
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6">Fintech</td>
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                      >
+                        experimental
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
+                      Up to 10 partial refunds within 60 days of transaction
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      class="py-3.5 px-4 sm:px-6 font-semibold text-txt-primary"
+                    >
+                      AWS SNS Webhooks
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6">Webhooks</td>
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                      >
+                        experimental
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
+                      RSA X.509 cert validation &amp; SNS handshake handler
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      class="py-3.5 px-4 sm:px-6 font-semibold text-txt-primary"
+                    >
+                      Dynamic Charging v1
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6">Aggregator</td>
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/30"
+                      >
+                        planned
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
+                      Slab, fixed, and percentage fees for aggregator merchants
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      class="py-3.5 px-4 sm:px-6 font-semibold text-txt-primary"
+                    >
+                      Payouts / Disbursements
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6">Disbursements</td>
+                    <td class="py-3.5 px-4 sm:px-6">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/30"
+                      >
+                        planned
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
+                      B2C, B2B automated payroll &amp; vendor payouts
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    {{> footer}}
+
+    <!-- Client JavaScript Module -->
+    <script type="module" src="{{BASE_PATH}}js/main.js"></script>
+  </body>
+</html>

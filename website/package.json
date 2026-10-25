@@ -1,0 +1,23 @@
+{
+  "name": "bkash-website",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Marketing and documentation website for bkash-server and bkash-client",
+  "type": "module",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/styles/input.css -o ./dist/css/styles.css --minify",
+    "build:site": "node ./scripts/build.js",
+    "build": "npm run build:css && npm run build:site",
+    "dev:css": "tailwindcss -i ./src/styles/input.css -o ./dist/css/styles.css --watch",
+    "dev:site": "node ./scripts/build.js --watch",
+    "check:html": "html-validate \"dist/**/*.html\"",
+    "check:links": "node ./scripts/check-links.js",
+    "check:format": "prettier --check \"src/**/*.{html,css,js,json}\"",
+    "format": "prettier --write \"src/**/*.{html,css,js,json}\""
+  },
+  "devDependencies": {
+    "html-validate": "^9.4.0",
+    "prettier": "^3.3.3",
+    "tailwindcss": "^3.4.17"
+  }
+}

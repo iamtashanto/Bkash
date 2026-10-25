@@ -1,0 +1,49 @@
+@import "./tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    line-height: var(--lh-body-en);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* When page or element is set to Bangla */
+  [lang="bn"] {
+    font-family: var(--font-bangla);
+    line-height: var(--lh-body-bn);
+  }
+
+  /* Selection styling */
+  ::selection {
+    background-color: var(--color-accent-200);
+    color: var(--color-accent-950);
+  }
+
+  html.dark ::selection {
+    background-color: var(--color-accent-900);
+    color: var(--color-accent-100);
+  }
+}
+
+@layer utilities {
+  .accent-gradient {
+    background: linear-gradient(
+      135deg,
+      var(--color-accent-600) 0%,
+      var(--color-accent-400) 100%
+    );
+  }
+
+  .glass-panel {
+    background-color: var(--color-bg-surface-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
