@@ -12,10 +12,13 @@ Universal, headless, tree-shakeable frontend client SDK for bKash payment integr
 
 ## Features
 
-- **Headless State Machine:** Fully typed lifecycle (`idle`, `creating`, `awaiting_user`, `verifying`, `success`, `error`).
+- **Headless-First Architecture (0.1.x):** Unstyled, headless state machines and hooks (`useBkash`, `<BkashButton />`, `<BkashCheckout />`). Zero opinionated CSS or bundled stylesheets, giving you 100% control over layout and styling. Pre-packaged themes are planned for post-0.1.
+- **Client States:** Fully typed state machine (`idle`, `creating`, `awaiting_user`, `verifying`, `success`, `pending`, `cancelled`, `timeout`, `offline`, `error`). Unknown or timed-out transactions present "payment pending, do not pay again" rather than false errors.
 - **Zero Frontend Secrets:** Never touches merchant credentials or API keys; communicates strictly with your backend routes.
-- **Framework Bindings:** First-class bindings for React (`useBkash`, `<BkashButton />`), React Native (`<BkashCheckout />`), Vue 3 (`useBkash`), Svelte store (`createBkashStore`), and Angular service (`BkashService`).
+- **Framework Bindings:** First-class bindings for React (`useBkash`, `<BkashButton />`), React Native (`<BkashCheckout />`), Vue 3 (`useBkash` with deep Refs), Svelte store (`createBkashStore`), and Angular service (`BkashService`).
 - **Drop-in Script Tag:** Standalone IIFE bundle for plain HTML/JS websites.
+
+> **Alpha Limitation (AUD-04):** On Android devices, `<BkashCheckout />` does not automatically attach a native `BackHandler`. Developers must manage Android hardware back actions in their navigation container until built-in BackHandler integration lands in beta.
 
 ---
 
