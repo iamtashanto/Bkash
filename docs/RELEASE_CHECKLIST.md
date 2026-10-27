@@ -8,7 +8,7 @@ is moved to a version only when every **stable gate** below is checked.
 
 | Gate | State | Evidence |
 | --- | --- | --- |
-| Typecheck, unit and regression tests | Pass locally | bkash-server 85+ tests, bkash-client 17 tests, Node 18, 22, 24 |
+| Typecheck, unit and regression tests | Pass locally | bkash-server 83 tests, bkash-client 17 tests, Node 18, 22, 24 |
 | v2 adapter matches the documented API | Pass (mock) | `test/regression/v2-conformance.test.ts` |
 | Error table equals the published table | Pass | `test/regression/error-table.test.ts` |
 | Website samples import real exports | Pass | `test/regression/website-snippets.test.ts` |
