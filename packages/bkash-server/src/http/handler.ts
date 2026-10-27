@@ -1,5 +1,16 @@
-import type { BkashServer } from '../server.js';
-import type { ExpectedOrderDetails, PaymentExecutionResult, VerifiedWebhookPayload } from '../types.js';
+import type { BkashServer } from "../server.js";
+import {
+  BkashApiError,
+  BkashDuplicateExecutionError,
+  BkashRateLimitError,
+  BkashTimeoutError,
+  BkashVerificationMismatchError,
+} from "../errors.js";
+import type {
+  ExpectedOrderDetails,
+  PaymentExecutionResult,
+  VerifiedWebhookPayload,
+} from "../types.js";
 
 export interface BkashHandlerOptions {
   /** Optional base path prefix (e.g. "/api/bkash") */
@@ -10,13 +21,22 @@ export interface BkashHandlerOptions {
    */
   resolveOrder?: (
     req: Request,
-    clientBody: Record<string, unknown>
+    clientBody: Record<string, unknown>,
   ) => Promise<ExpectedOrderDetails> | ExpectedOrderDetails;
   /**
    * Explicit opt-in flag to allow client-supplied amounts.
    * WARNING: Insecure for e-commerce checkouts. Only use for donation forms or test prototypes.
    */
   allowClientAmount?: boolean;
+  /**
+   * Fixed callback URL sent to bKash. Defaults to `<request origin><basePath>/callback`.
+   */
+  callbackUrl?: string;
+  /**
+   * Origins a client-supplied `callbackUrl` may use. Without this list the
+   * client-supplied value is ignored and never forwarded to bKash.
+   */
+  allowedCallbackOrigins?: string[];
   /**
    * Allowed redirect origins for callback redirects to prevent open-redirect vulnerabilities.
    */
@@ -33,17 +53,17 @@ export interface BkashHandlerOptions {
   /** Hook called when payment completes successfully */
   onSuccess?: (
     result: PaymentExecutionResult,
-    req: Request
+    req: Request,
   ) => Promise<Response | void> | Response | void;
   /** Hook called when payment fails */
   onError?: (
     error: Error,
-    req: Request
+    req: Request,
   ) => Promise<Response | void> | Response | void;
   /** Hook called when a verified webhook notification is processed */
   onWebhook?: (
     payload: VerifiedWebhookPayload,
-    req: Request
+    req: Request,
   ) => Promise<Response | void> | Response | void;
 }
 
@@ -62,19 +82,22 @@ export class BkashHttpHandler {
    */
   public async handle(request: Request): Promise<Response> {
     const url = new URL(request.url);
-    const basePath = (this.options.basePath || '').replace(/\/+$/, '');
+    const basePath = (this.options.basePath || "").replace(/\/+$/, "");
     let path = url.pathname;
     if (basePath && path.startsWith(basePath)) {
       path = path.slice(basePath.length);
     }
-    if (!path.startsWith('/')) {
-      path = '/' + path;
+    if (!path.startsWith("/")) {
+      path = "/" + path;
     }
 
     try {
       // 1. Create Payment: POST /create
-      if (request.method === 'POST' && path === '/create') {
-        const body = ((await request.json().catch(() => ({}))) || {}) as Record<string, any>;
+      if (request.method === "POST" && path === "/create") {
+        const body = ((await request.json().catch(() => ({}))) || {}) as Record<
+          string,
+          any
+        >;
         let expectedOrder: ExpectedOrderDetails;
 
         if (this.options.resolveOrder) {
@@ -82,13 +105,16 @@ export class BkashHttpHandler {
         } else if (this.options.allowClientAmount) {
           if (!body.amount || !body.invoiceNumber) {
             return new Response(
-              JSON.stringify({ success: false, error: 'amount and invoiceNumber are required.' }),
-              { status: 400, headers: { 'Content-Type': 'application/json' } }
+              JSON.stringify({
+                success: false,
+                error: "amount and invoiceNumber are required.",
+              }),
+              { status: 400, headers: { "Content-Type": "application/json" } },
             );
           }
           expectedOrder = {
             amount: body.amount,
-            currency: body.currency || 'BDT',
+            currency: body.currency || "BDT",
             invoiceNumber: body.invoiceNumber,
           };
         } else {
@@ -96,65 +122,104 @@ export class BkashHttpHandler {
             JSON.stringify({
               success: false,
               error:
-                'Security Error: Client-supplied amounts are disabled by default. Provide a resolveOrder(request, body) callback in BkashHandlerOptions, or set allowClientAmount: true.',
+                "Security Error: Client-supplied amounts are disabled by default. Provide a resolveOrder(request, body) callback in BkashHandlerOptions, or set allowClientAmount: true.",
             }),
-            { status: 400, headers: { 'Content-Type': 'application/json' } }
+            { status: 400, headers: { "Content-Type": "application/json" } },
           );
         }
 
-        const defaultCallback = new URL(request.url).origin + (basePath || '') + '/callback';
+        const defaultCallback =
+          this.options.callbackUrl ||
+          new URL(request.url).origin + (basePath || "") + "/callback";
+        let callbackUrl = defaultCallback;
+        const allowed = this.options.allowedCallbackOrigins;
+        if (
+          typeof body.callbackUrl === "string" &&
+          body.callbackUrl &&
+          allowed?.length
+        ) {
+          let origin: string | null = null;
+          try {
+            origin = new URL(body.callbackUrl).origin;
+          } catch {
+            origin = null;
+          }
+          if (!origin || !allowed.includes(origin)) {
+            return jsonResponse(400, {
+              success: false,
+              error: "callbackUrl is not on the allowed origin list.",
+            });
+          }
+          callbackUrl = body.callbackUrl;
+        }
+        // orderId and payerReference are never taken from the client body.
         const createParams = {
           amount: expectedOrder.amount,
-          currency: expectedOrder.currency || 'BDT',
+          currency: expectedOrder.currency || "BDT",
           invoiceNumber: expectedOrder.invoiceNumber,
-          callbackUrl: body.callbackUrl || defaultCallback,
-          orderId: body.orderId,
-          payerReference: body.payerReference,
+          callbackUrl,
         };
 
         const result = await this.bkash.createPayment(createParams);
         return new Response(JSON.stringify({ success: true, ...result }), {
           status: 200,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         });
       }
 
       // 2. Callback: GET or POST /callback
-      if ((request.method === 'GET' || request.method === 'POST') && path === '/callback') {
+      if (
+        (request.method === "GET" || request.method === "POST") &&
+        path === "/callback"
+      ) {
         let paymentId: string | null = null;
         let status: string | null = null;
 
-        if (request.method === 'GET') {
-          paymentId = url.searchParams.get('paymentID') || url.searchParams.get('paymentId');
-          status = url.searchParams.get('status');
+        if (request.method === "GET") {
+          paymentId =
+            url.searchParams.get("paymentID") ||
+            url.searchParams.get("paymentId");
+          status = url.searchParams.get("status");
         } else {
-          const body = ((await request.json().catch(() => ({}))) || {}) as Record<string, any>;
-          paymentId = body.paymentID || body.paymentId || url.searchParams.get('paymentId');
-          status = body.status || url.searchParams.get('status');
+          const body = ((await request.json().catch(() => ({}))) ||
+            {}) as Record<string, any>;
+          paymentId =
+            body.paymentID ||
+            body.paymentId ||
+            url.searchParams.get("paymentId");
+          status = body.status || url.searchParams.get("status");
         }
 
-        if (status === 'cancel' || status === 'failure') {
-          const err = new Error(`Payment ${status}: User aborted or payment failed at bKash gateway.`);
+        if (status === "cancel" || status === "failure") {
+          const err = new Error(
+            `Payment ${status}: User aborted or payment failed at bKash gateway.`,
+          );
           if (this.options.onError) {
             const customRes = await this.options.onError(err, request);
             if (customRes) return customRes;
           }
-          return new Response(JSON.stringify({ success: false, status, message: err.message }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          return new Response(
+            JSON.stringify({ success: false, status, message: err.message }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
         }
 
         if (!paymentId) {
-          const err = new Error('Callback missing paymentId parameter.');
+          const err = new Error("Callback missing paymentId parameter.");
           if (this.options.onError) {
             const customRes = await this.options.onError(err, request);
             if (customRes) return customRes;
           }
-          return new Response(JSON.stringify({ success: false, error: err.message }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          return new Response(
+            JSON.stringify({ success: false, error: err.message }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
         }
 
         const result = await this.bkash.executePayment({ paymentId });
@@ -165,11 +230,14 @@ export class BkashHttpHandler {
         }
 
         // Open Redirect Protection
-        const requestedReturn = url.searchParams.get('returnUrl') || this.options.redirectUrl;
+        const requestedReturn =
+          url.searchParams.get("returnUrl") || this.options.redirectUrl;
         if (requestedReturn) {
           try {
             const targetOrigin = new URL(requestedReturn).origin;
-            const isAllowed = (this.options.allowedRedirectOrigins || []).includes(targetOrigin);
+            const isAllowed = (
+              this.options.allowedRedirectOrigins || []
+            ).includes(targetOrigin);
             if (isAllowed) {
               return Response.redirect(requestedReturn, 302);
             }
@@ -180,18 +248,26 @@ export class BkashHttpHandler {
 
         return new Response(JSON.stringify({ success: true, ...result }), {
           status: 200,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         });
       }
 
       // 3. Status Query: GET /status?paymentId=...
-      if (request.method === 'GET' && path === '/status') {
-        const paymentId = url.searchParams.get('paymentId') || url.searchParams.get('paymentID');
+      if (request.method === "GET" && path === "/status") {
+        const paymentId =
+          url.searchParams.get("paymentId") ||
+          url.searchParams.get("paymentID");
         if (!paymentId) {
-          return new Response(JSON.stringify({ success: false, error: 'paymentId query parameter is required.' }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          });
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: "paymentId query parameter is required.",
+            }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
         }
 
         const queryResult = await this.bkash.queryPayment(paymentId);
@@ -210,17 +286,26 @@ export class BkashHttpHandler {
 
         return new Response(JSON.stringify(publicStatus), {
           status: 200,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         });
       }
 
       // 4. Webhook: POST /webhook
-      if (request.method === 'POST' && path === '/webhook') {
+      if (request.method === "POST" && path === "/webhook") {
         const rawBody = await request.text();
         const verified = await this.bkash.webhook.verify(rawBody);
 
-        if (verified) {
-          const paymentId = (verified.data as any)?.paymentID || (verified.data as any)?.paymentId;
+        if (!verified) {
+          return jsonResponse(401, {
+            success: false,
+            error: "Webhook verification failed.",
+          });
+        }
+
+        {
+          const paymentId =
+            (verified.data as any)?.paymentID ||
+            (verified.data as any)?.paymentId;
           if (paymentId) {
             await this.bkash.queryPayment(paymentId);
           }
@@ -233,13 +318,13 @@ export class BkashHttpHandler {
 
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         });
       }
 
-      return new Response(JSON.stringify({ error: 'Not Found', path }), {
+      return new Response(JSON.stringify({ error: "Not Found", path }), {
         status: 404,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error(String(err));
@@ -247,12 +332,57 @@ export class BkashHttpHandler {
         const customRes = await this.options.onError(error, request);
         if (customRes) return customRes;
       }
-      return new Response(JSON.stringify({ success: false, error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return errorResponse(error);
     }
   }
+}
+
+function jsonResponse(status: number, data: unknown): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+/**
+ * Minimal public error mapping. Raw messages of unknown errors are never returned,
+ * and an unconfirmed outcome is reported as "unknown", never as "failed".
+ */
+function errorResponse(error: Error): Response {
+  if (
+    error instanceof BkashTimeoutError ||
+    error instanceof BkashDuplicateExecutionError
+  ) {
+    return jsonResponse(error instanceof BkashTimeoutError ? 202 : 409, {
+      success: false,
+      status: error instanceof BkashTimeoutError ? "unknown" : "duplicate",
+      error:
+        error instanceof BkashTimeoutError
+          ? "The payment outcome could not be confirmed. Do not pay again; check the payment status first."
+          : "This payment is already being processed.",
+    });
+  }
+  if (error instanceof BkashVerificationMismatchError) {
+    return jsonResponse(409, {
+      success: false,
+      status: "mismatch",
+      error: "Payment details did not match the order.",
+    });
+  }
+  if (error instanceof BkashRateLimitError) {
+    return jsonResponse(429, {
+      success: false,
+      error: "Rate limited. Retry later.",
+    });
+  }
+  if (error instanceof BkashApiError) {
+    return jsonResponse(400, {
+      success: false,
+      code: error.code,
+      error: error.message,
+    });
+  }
+  return jsonResponse(500, { success: false, error: "bKash request failed." });
 }
 
 /**
@@ -260,7 +390,7 @@ export class BkashHttpHandler {
  */
 export function createBkashHandler(
   bkash: BkashServer,
-  options?: BkashHandlerOptions
+  options?: BkashHandlerOptions,
 ): BkashHttpHandler {
   return new BkashHttpHandler(bkash, options);
 }
