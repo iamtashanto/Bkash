@@ -15,14 +15,14 @@
       "name": "Tokenized Checkout v1.2.0-beta",
       "category": "Legacy Engine",
       "status": "experimental",
-      "description": "Backward-compatible mapping for legacy v1.2 endpoints and response shapes. Validated against reference integration flow."
+      "description": "Backward-compatible mapping for legacy v1.2 endpoints and response shapes. Covered by automated tests against a local mock; not yet validated against the live gateway."
     },
     {
       "id": "token-cache",
       "name": "Token Lifecycle Cache & Mutex",
       "category": "Security & Reliability",
       "status": "experimental",
-      "description": "Prevents the catastrophic 2 calls/hr lockout on v2 by caching tokens with proactive 50-minute refresh, single-flight concurrency, and atomic Redis locks."
+      "description": "Reduces the risk of token rate-limit lockout (reported as low as 2 grant-token calls/hr; unverified for your account) by caching tokens with proactive 50-minute refresh, single-flight concurrency, and atomic Redis locks."
     },
     {
       "id": "amount-verification",

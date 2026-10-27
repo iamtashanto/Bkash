@@ -80,7 +80,7 @@
                     id="install-cmd"
                     class="font-mono text-xs sm:text-sm text-emerald-400 selection:bg-emerald-900 selection:text-white"
                   >
-                    pnpm add bkash-server bkash-client
+                    pnpm add bkash-server@alpha bkash-client@alpha
                   </code>
                   <button
                     type="button"
@@ -94,11 +94,11 @@
               </div>
               <p
                 class="text-[11px] text-txt-muted mt-2 text-center"
-                data-en="Note: Package names will be published upon v0.1.0 release completion. Under active local scaffolding."
-                data-bn="নোট: v0.1.0 রিলিজ সম্পন্ন হলে প্যাকেজটি এনপিএম রেজিস্ট্রিতে প্রকাশিত হবে। বর্তমানে লোকাল ডেভেলপমেন্টাধীন।"
+                data-en="Alpha release: install with the @alpha tag. Not yet validated against the live bKash gateway."
+                data-bn="আলফা রিলিজ: @alpha ট্যাগ দিয়ে ইনস্টল করুন। লাইভ বিকাশ গেটওয়েতে এখনো যাচাই করা হয়নি (বাংলা অনুবাদ native-speaker review প্রয়োজন)।"
               >
-                Note: Package names will be published upon v0.1.0 release
-                completion. Under active local scaffolding.
+                Alpha release: install with the @alpha tag. Not yet validated
+                against the live bKash gateway.
               </p>
             </div>
 
@@ -287,7 +287,7 @@
                   text-anchor="middle"
                   class="fill-txt-muted text-[9px] font-mono"
                 >
-                  &lt;2 calls/hr limit safe
+                  token rate-limit aware
                 </text>
 
                 <!-- Arrow 2 -> 3 -->
@@ -520,7 +520,7 @@
                 Vue
                 <span
                   class="text-[9px] uppercase px-1 py-0.2 rounded bg-surface border border-border-subtle ml-1"
-                  >Planned</span
+                  >Experimental</span
                 >
               </button>
               <button
@@ -533,7 +533,7 @@
                 Angular
                 <span
                   class="text-[9px] uppercase px-1 py-0.2 rounded bg-surface border border-border-subtle ml-1"
-                  >Planned</span
+                  >Experimental</span
                 >
               </button>
             </div>
@@ -558,23 +558,25 @@
                 <pre
                   class="p-4 text-xs sm:text-sm font-mono overflow-x-auto text-slate-200"
                 ><code id="code-express">import express from "express";
-import { createBkash } from "bkash-server";
-import { createExpressAdapter } from "bkash-server/express";
+import { BkashServer } from "bkash-server";
+import { createExpressHandler } from "bkash-server/frameworks";
 
 const app = express();
-app.use(express.json());
+const bkash = new BkashServer({
+  apiVersion: "v1.2.0-beta", // "v2" is experimental
+  appKey: process.env.BKASH_APP_KEY!,
+  appSecret: process.env.BKASH_APP_SECRET!,
+  username: process.env.BKASH_USERNAME!,
+  password: process.env.BKASH_PASSWORD!,
+  baseUrl: process.env.BKASH_BASE_URL!,
+});
 
-// Initialize bKash SDK with zero-config (reads process.env.BKASH_*)
-const bkash = createBkash();
-
-// Mount automatic /create, /callback, and /webhook endpoints
-app.use("/api/payment/bkash", createExpressAdapter(bkash, {
-  async onPaymentSuccess({ paymentId, trxId, amount, invoiceNumber }) {
-    console.log(`Payment confirmed: ${invoiceNumber} | Trx: ${trxId} | ৳${amount}`);
-  }
+// Mounts /create, /callback, /status. The amount is decided here, never by the browser.
+app.use("/api/bkash", createExpressHandler(bkash, {
+  resolveOrder: async () =&gt; ({ amount: 1550, currency: "BDT", invoiceNumber: "INV_1001" }),
 }));
 
-app.listen(3000, () =&gt; console.log("Server running on port 3000"));</code></pre>
+app.listen(3000);</code></pre>
               </div>
             </div>
 
@@ -599,16 +601,18 @@ app.listen(3000, () =&gt; console.log("Server running on port 3000"));</code></p
                 </div>
                 <pre
                   class="p-4 text-xs sm:text-sm font-mono overflow-x-auto text-slate-200"
-                ><code id="code-next">import { createBkash } from "bkash-server";
-import { createNextRouteHandler } from "bkash-server/next";
+                ><code id="code-next">import { BkashServer } from "bkash-server";
+import { createNextHandler } from "bkash-server/frameworks";
 
-const bkash = createBkash();
+const bkash = new BkashServer({ /* see Express example */ });
 
-export const { GET, POST } = createNextRouteHandler(bkash, {
-  async onPaymentSuccess({ paymentId, trxId, amount, invoiceNumber }) {
-    // Automatically called only AFTER cryptographically verifying amount and invoice
-    await fulfillOrder({ invoiceNumber, trxId, amount });
-  }
+export const { GET, POST } = createNextHandler(bkash, {
+  basePath: "/api/bkash",
+  resolveOrder: async (req) =&gt; ({ amount: await cartTotal(req), currency: "BDT", invoiceNumber: await newInvoice(req) }),
+  onSuccess: async (result) =&gt; {
+    // result.transactionStatus is verified against the expected amount and invoice
+    await fulfillOrder(result);
+  },
 });</code></pre>
               </div>
             </div>
@@ -632,19 +636,17 @@ export const { GET, POST } = createNextRouteHandler(bkash, {
                 </div>
                 <pre
                   class="p-4 text-xs sm:text-sm font-mono overflow-x-auto text-slate-200"
-                ><code id="code-react">import { useBkash } from "bkash-client/react";
+                ><code id="code-react">import { useBkash, BkashButton } from "bkash-client/react";
 
-export function CheckoutButton({ invoiceId, amount }: { invoiceId: string; amount: number }) {
-  const { initiateCheckout, isLoading, error } = useBkash({
-    createEndpoint: "/api/payment/bkash/create",
-    onSuccess: (data) =&gt; alert(`Payment successful: ${data.trxId}`),
-    onError: (err) =&gt; alert(`Failed: ${err.message}`)
-  });
+export function CheckoutPage() {
+  const { state, error } = useBkash({ createUrl: "/api/bkash/create" });
 
   return (
-    &lt;button onClick={() =&gt; initiateCheckout({ invoiceId, amount })} disabled={isLoading}&gt;
-      {isLoading ? "Redirecting..." : `Pay ৳${amount} with bKash`}
-    &lt;/button&gt;
+    &lt;div&gt;
+      &lt;BkashButton&gt;Pay with bKash&lt;/BkashButton&gt;
+      {state === "pending" &amp;&amp; &lt;p&gt;Payment pending, do not pay again.&lt;/p&gt;}
+      {error &amp;&amp; &lt;p&gt;{error.message}&lt;/p&gt;}
+    &lt;/div&gt;
   );
 }</code></pre>
               </div>
@@ -669,15 +671,16 @@ export function CheckoutButton({ invoiceId, amount }: { invoiceId: string; amoun
                 </div>
                 <pre
                   class="p-4 text-xs sm:text-sm font-mono overflow-x-auto text-slate-200"
-                ><code id="code-rn">import React from "react";
+                ><code id="code-rn">import { WebView } from "react-native-webview";
 import { BkashCheckout } from "bkash-client/react-native";
 
-export function NativeCheckoutScreen({ route, navigation }: any) {
+export function PaymentScreen({ route, navigation }: any) {
   return (
     &lt;BkashCheckout
-      paymentUrl={route.params.bkashURL}
-      callbackUrl="https://api.example.com/api/payment/bkash/callback"
-      onSuccess={(result) =&gt; navigation.replace("OrderSuccess", { trxId: result.trxId })}
+      redirectUrl={route.params.redirectUrl}
+      callbackUrl="https://merchant.example.com/api/bkash/callback"
+      WebViewComponent={WebView}
+      onSuccess={(paymentId) =&gt; navigation.navigate("Success", { paymentId })}
       onCancel={() =&gt; navigation.goBack()}
       onError={(err) =&gt; alert(err.message)}
     /&gt;
@@ -688,31 +691,20 @@ export function NativeCheckoutScreen({ route, navigation }: any) {
 
             <!-- Vue Panel -->
             <div data-framework-panel="vue" class="hidden space-y-4">
-              <div
-                class="rounded-xl border border-dashed border-border-strong bg-surface p-8 text-center text-txt-secondary"
-              >
-                <p class="font-semibold text-txt-primary">
-                  Vue 3 Composable Scheduled for Phase 5
-                </p>
-                <p class="text-xs text-txt-muted mt-1">
-                  Reactive useBkash() composable will be published upon core
-                  stability.
-                </p>
-              </div>
+              <pre
+                class="p-4 text-xs sm:text-sm font-mono overflow-x-auto text-slate-200"
+              ><code id="code-vue">import { useBkash } from "bkash-client/vue";
+
+const { state, checkout } = useBkash({ createUrl: "/api/bkash/create" });</code></pre>
             </div>
 
             <!-- Angular Panel -->
             <div data-framework-panel="angular" class="hidden space-y-4">
-              <div
-                class="rounded-xl border border-dashed border-border-strong bg-surface p-8 text-center text-txt-secondary"
-              >
-                <p class="font-semibold text-txt-primary">
-                  Angular Service Scheduled for Phase 5
-                </p>
-                <p class="text-xs text-txt-muted mt-1">
-                  RxJS-based BkashService will be published upon core stability.
-                </p>
-              </div>
+              <pre
+                class="p-4 text-xs sm:text-sm font-mono overflow-x-auto text-slate-200"
+              ><code id="code-angular">import { BkashService } from "bkash-client/angular";
+
+const bkash = new BkashService({ createUrl: "/api/bkash/create" });</code></pre>
             </div>
           </div>
         </div>
@@ -751,14 +743,14 @@ export function NativeCheckoutScreen({ route, navigation }: any) {
               </div>
               <h3
                 class="text-base font-bold text-txt-primary"
-                data-en="2 Calls/Hour Lockout Shield"
-                data-bn="২ কল/ঘন্টা রেট-লিমিট শিল্ড"
+                data-en="Token Rate-Limit Shield"
+                data-bn="টোকেন রেট-লিমিট শিল্ড"
               >
-                2 Calls/Hour Lockout Shield
+                Token Rate-Limit Shield
               </h3>
               <p
                 class="text-xs text-txt-secondary leading-relaxed"
-                data-en="bKash Tokenized v2 enforces a strict limit of max 2 calls/hr to grant-token. Standard scripts make 2 calls per checkout and crash by the second user. Our SDK proactively caches tokens and rotates via refresh-token."
+                data-en="bKash limits how often a token may be requested (reported as low as 2 grant-token calls per hour; confirm the limit for your account). The SDK caches tokens, refreshes them proactively and shares them across instances through your store."
                 data-bn="বিকাশ v2 টোকেন গ্র্যান্টে প্রতি ঘণ্টায় মাত্র ২টি কল অনুমোদন করে। সাধারণ স্ক্রিপ্ট প্রতিটি পেমেন্টে টোকেন চেয়ে অ্যাকাউন্ট লক করে ফেলে। আমাদের এসডিকে স্মার্টলি টোকেন ক্যাশ এবং রোটেট করে।"
               >
                 bKash Tokenized v2 enforces a strict limit of max 2 calls/hr to
@@ -940,9 +932,9 @@ export function NativeCheckoutScreen({ route, navigation }: any) {
                     <td class="py-3.5 px-4 sm:px-6">Checkout</td>
                     <td class="py-3.5 px-4 sm:px-6">
                       <span
-                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/30"
                       >
-                        experimental
+                        planned
                       </span>
                     </td>
                     <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
@@ -959,9 +951,9 @@ export function NativeCheckoutScreen({ route, navigation }: any) {
                     <td class="py-3.5 px-4 sm:px-6">Fintech</td>
                     <td class="py-3.5 px-4 sm:px-6">
                       <span
-                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/30"
                       >
-                        experimental
+                        planned
                       </span>
                     </td>
                     <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
@@ -1022,7 +1014,8 @@ export function NativeCheckoutScreen({ route, navigation }: any) {
                       </span>
                     </td>
                     <td class="py-3.5 px-4 sm:px-6 text-txt-muted text-xs">
-                      Slab, fixed, and percentage fees for aggregator merchants
+                      Not implemented. Slab, fixed, and percentage fees for
+                      aggregator merchants
                     </td>
                   </tr>
 
