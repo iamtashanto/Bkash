@@ -1,161 +1,229 @@
 {
   "version": "0.1.0-alpha",
-  "lastUpdated": "2026-10-25",
+  "lastUpdated": "2026-10-27",
   "disclaimer": "Unofficial community library. Not affiliated with or endorsed by bKash Limited.",
+  "levels": {
+    "stable": "Verified against the published documentation and covered by automated tests.",
+    "beta": "Covered by automated tests and, where noted, a live sandbox run. Not yet validated end to end with a real payment.",
+    "experimental": "Implemented and tested against mocks only. May change.",
+    "planned": "Not implemented."
+  },
   "features": [
-    {
-      "id": "tokenized-v2",
-      "name": "Tokenized Checkout v2",
-      "category": "Core Engine",
-      "status": "experimental",
-      "description": "Modern API v2 with /auth/grant-token, /payment/create, and /payment/execute. Under active validation pending live sandbox E2E test runs."
-    },
     {
       "id": "tokenized-v1",
       "name": "Tokenized Checkout v1.2.0-beta",
-      "category": "Legacy Engine",
+      "category": "Core",
+      "status": "beta",
+      "package": "bkash-server",
+      "description": "Grant token, create, execute, query, search, refund and refund status against /v1.2.0-beta.",
+      "evidence": "automated tests against a local mock; live sandbox create+query run on 2026-10-27 (execute needs a customer PIN and is NOT TESTED live)"
+    },
+    {
+      "id": "tokenized-v2",
+      "name": "Tokenized Checkout v2",
+      "category": "Core",
       "status": "experimental",
-      "description": "Backward-compatible mapping for legacy v1.2 endpoints and response shapes. Covered by automated tests against a local mock; not yet validated against the live gateway."
+      "package": "bkash-server",
+      "description": "Grant/refresh token, create, execute, query, search, refund and refund status on /v2/tokenized-checkout, following developer.bka.sh.",
+      "evidence": "automated tests against a strict mock of the documented paths and fields; NOT TESTED against the live v2 sandbox"
     },
     {
       "id": "token-cache",
-      "name": "Token Lifecycle Cache & Mutex",
-      "category": "Security & Reliability",
-      "status": "experimental",
-      "description": "Reduces the risk of token rate-limit lockout (reported as low as 2 grant-token calls/hr; unverified for your account) by caching tokens with proactive 50-minute refresh, single-flight concurrency, and atomic Redis locks."
+      "name": "Token cache, refresh and lock",
+      "category": "Reliability",
+      "status": "beta",
+      "package": "bkash-server",
+      "description": "Reuses the id_token, refreshes before expiry and shares it across instances so Grant/Refresh stay within the documented two-calls-per-hour limit.",
+      "evidence": "automated tests (concurrency, lease expiry); real Redis tests run in CI"
     },
     {
       "id": "amount-verification",
-      "name": "Amount & Invoice Verification Guard",
-      "category": "Security & Reliability",
-      "status": "experimental",
-      "description": "Strictly verifies that execute response amounts and invoice numbers match the expected order before order confirmation."
+      "name": "Amount and invoice verification",
+      "category": "Reliability",
+      "status": "beta",
+      "package": "bkash-server",
+      "description": "Rejects an execute result whose amount, currency or invoice differs from the order you expected.",
+      "evidence": "automated tests"
     },
     {
       "id": "timeout-reconciliation",
-      "name": "Auto-Query Timeout Reconciliation",
-      "category": "Security & Reliability",
-      "status": "experimental",
-      "description": "Automatically falls back to queryPayment on Error 2062 or 30s execute timeouts to recover transaction status."
+      "name": "Timeout and 2062 reconciliation",
+      "category": "Reliability",
+      "status": "beta",
+      "package": "bkash-server",
+      "description": "On a 30 s timeout or error 2062, queries the payment and reports Completed, or an explicit unknown outcome.",
+      "evidence": "automated tests against a mock"
+    },
+    {
+      "id": "http-handler",
+      "name": "Web-standard HTTP handler",
+      "category": "Server",
+      "status": "beta",
+      "package": "bkash-server",
+      "description": "/create, /callback, /status and /webhook. The server decides amount and invoice; callback URLs and redirects are allowlisted; responses are minimal.",
+      "evidence": "automated tests: tampering, allowlist, error mapping"
+    },
+    {
+      "id": "error-table",
+      "name": "Documented error-code table",
+      "category": "Reliability",
+      "status": "stable",
+      "package": "bkash-server",
+      "description": "All 87 payment and refund codes from the published bKash tables mapped to messages.",
+      "evidence": "automated tests compare the table with the published codes"
     },
     {
       "id": "agreements",
-      "name": "Agreements & 1-Click Pay",
-      "category": "Checkout Experience",
-      "status": "planned",
-      "description": "Customer account binding and 1-click repeat checkouts requiring PIN entry only. Scheduled for Phase 7."
+      "name": "Agreements (tokenized, v2)",
+      "category": "Checkout",
+      "status": "experimental",
+      "package": "bkash-server",
+      "description": "Create, execute, query and cancel an agreement; create and execute payments with an agreement.",
+      "evidence": "automated tests against a strict mock; NOT TESTED live. Not available with apiVersion v1.2.0-beta."
+    },
+    {
+      "id": "refunds",
+      "name": "Refund and refund status",
+      "category": "Payments",
+      "status": "experimental",
+      "package": "bkash-server",
+      "description": "Full or partial refund (up to 10 per transaction within 60 days) and refund history.",
+      "evidence": "automated tests; NOT TESTED live"
+    },
+    {
+      "id": "search-transaction",
+      "name": "Search transaction",
+      "category": "Payments",
+      "status": "beta",
+      "package": "bkash-server",
+      "description": "Look up a completed transaction by trxId.",
+      "evidence": "automated tests"
+    },
+    {
+      "id": "webhooks-sns",
+      "name": "IPN / webhook (AWS SNS) verification",
+      "category": "Webhooks",
+      "status": "experimental",
+      "package": "bkash-server",
+      "description": "Verifies bKash IPN messages delivered through AWS SNS (certificate host check, signature, replay).",
+      "evidence": "automated tests with generated keys; NOT TESTED with a real bKash notification"
     },
     {
       "id": "auth-capture",
       "name": "Auth & Capture",
-      "category": "Fintech Capabilities",
+      "category": "Payments",
       "status": "planned",
-      "description": "Pre-authorization hold with strictly enforced one-time capture or void. Scheduled for Phase 7."
+      "package": "bkash-server",
+      "description": "The capture and void endpoints are not in the public bKash documentation, so they are not implemented. Methods throw BkashFeatureNotSupportedError.",
+      "evidence": "Specification not public"
     },
     {
-      "id": "refunds",
-      "name": "Refunds & Refund Status",
-      "category": "Fintech Capabilities",
-      "status": "experimental",
-      "description": "Refund execution via /tokenized/checkout/payment/refund."
-    },
-    {
-      "id": "webhooks-sns",
-      "name": "AWS SNS Webhook & Signature Verification",
-      "category": "Webhooks & IPN",
-      "status": "experimental",
-      "description": "Validates official bKash AWS SNS notifications with X.509 RSA certificate fetching, replay protection, and signature verification."
-    },
-    {
-      "id": "react-client",
-      "name": "React Client Hook (useBkash)",
-      "category": "Client Bindings",
-      "status": "experimental",
-      "description": "Type-safe React hook with idle -> creating -> awaiting_user -> verifying -> success state machine."
-    },
-    {
-      "id": "react-native-client",
-      "name": "React Native WebView (<BkashCheckout/>)",
-      "category": "Client Bindings",
-      "status": "experimental",
-      "description": "URL interception and in-app browser mode for React Native and Expo."
-    },
-    {
-      "id": "express-adapter",
-      "name": "Express Subpath Adapter",
-      "category": "Server Adapters",
-      "status": "experimental",
-      "description": "Pre-built routes for /create, /callback, and /webhook."
-    },
-    {
-      "id": "nextjs-adapter",
-      "name": "Next.js Route Handler Adapter",
-      "category": "Server Adapters",
-      "status": "experimental",
-      "description": "App Router and Pages API route handlers."
-    },
-    {
-      "id": "fastify-adapter",
-      "name": "Fastify Plugin",
-      "category": "Server Adapters",
-      "status": "experimental",
-      "description": "Native Fastify plugin with typed schemas and request converters."
-    },
-    {
-      "id": "hono-adapter",
-      "name": "Hono / Cloudflare Workers Adapter",
-      "category": "Server Adapters",
-      "status": "experimental",
-      "description": "Edge-runtime adapter for Cloudflare Workers, Fastly, and Deno."
-    },
-    {
-      "id": "vue-binding",
-      "name": "Vue 3 Composable",
-      "category": "Client Bindings",
-      "status": "experimental",
-      "description": "useBkash composable for Vue 3 and Nuxt."
-    },
-    {
-      "id": "angular-binding",
-      "name": "Angular Service",
-      "category": "Client Bindings",
-      "status": "experimental",
-      "description": "Plain TypeScript BkashService for Angular applications."
-    },
-    {
-      "id": "svelte-binding",
-      "name": "Svelte Store",
-      "category": "Client Bindings",
-      "status": "experimental",
-      "description": "Readable store wrapper for Svelte 4 and Svelte 5."
-    },
-    {
-      "id": "mock-simulator",
-      "name": "Local Mock Simulator",
-      "category": "Testing & Tooling",
-      "status": "experimental",
-      "description": "Local mock server for deterministic CI testing without credentials."
+      "id": "direct-charge",
+      "name": "Direct Charge / Linked Apps",
+      "category": "Payments",
+      "status": "planned",
+      "package": "bkash-server",
+      "description": "Mentioned in the bKash FAQ; no public API specification.",
+      "evidence": "Specification not public"
     },
     {
       "id": "dynamic-charging",
-      "name": "Dynamic Charging v1",
-      "category": "Aggregator Features",
+      "name": "Dynamic Charging",
+      "category": "Payments",
       "status": "planned",
-      "description": "Fixed, percentage, and slab-based fee calculation for aggregators and sub-merchants. Scheduled for Phase 7."
+      "package": "bkash-server",
+      "description": "Documented as a product on the bKash demo portal; no public API specification.",
+      "evidence": "Specification not public"
     },
     {
       "id": "payouts",
-      "name": "Payouts & Disbursements (B2C/B2B)",
-      "category": "Disbursements",
+      "name": "Disbursement, B2B and M2M payouts",
+      "category": "Payments",
       "status": "planned",
-      "description": "Automated salary, vendor, and agent disbursements. Scheduled for Phase 7."
+      "package": "bkash-server",
+      "description": "Mentioned in the bKash documentation home and FAQ; no public API specification.",
+      "evidence": "Specification not public"
     },
     {
-      "id": "nest-adapter",
-      "name": "NestJS Dynamic Module",
-      "category": "Server Adapters",
+      "id": "react-client",
+      "name": "React hook and button",
+      "category": "Client",
+      "status": "beta",
+      "package": "bkash-client",
+      "description": "useBkash and BkashButton.",
+      "evidence": "automated tests (React Testing Library)"
+    },
+    {
+      "id": "vue-binding",
+      "name": "Vue 3 composable",
+      "category": "Client",
+      "status": "beta",
+      "package": "bkash-client",
+      "description": "useBkash with reactive state.",
+      "evidence": "automated tests (Vue Test Utils)"
+    },
+    {
+      "id": "svelte-binding",
+      "name": "Svelte store",
+      "category": "Client",
+      "status": "beta",
+      "package": "bkash-client",
+      "description": "createBkashStore.",
+      "evidence": "automated tests"
+    },
+    {
+      "id": "angular-binding",
+      "name": "Angular service",
+      "category": "Client",
+      "status": "beta",
+      "package": "bkash-client",
+      "description": "BkashService.",
+      "evidence": "automated tests"
+    },
+    {
+      "id": "react-native-client",
+      "name": "React Native WebView checkout",
+      "category": "Client",
+      "status": "experimental",
+      "package": "bkash-client",
+      "description": "BkashCheckout intercepts the callback inside a WebView.",
+      "evidence": "automated tests (React Native Testing Library); NOT TESTED on a device"
+    },
+    {
+      "id": "express-adapter",
+      "name": "Express adapter",
+      "category": "Server",
+      "status": "beta",
+      "package": "bkash-server",
+      "description": "createExpressHandler.",
+      "evidence": "automated tests"
+    },
+    {
+      "id": "next-adapter",
+      "name": "Next.js route handler",
+      "category": "Server",
+      "status": "experimental",
+      "package": "bkash-server",
+      "description": "createNextHandler.",
+      "evidence": "automated tests (smoke)"
+    },
+    {
+      "id": "other-adapters",
+      "name": "Fastify, Hono, Koa, Remix, SvelteKit, Astro adapters",
+      "category": "Server",
+      "status": "experimental",
+      "package": "bkash-server",
+      "description": "Thin wrappers over the web-standard handler.",
+      "evidence": "automated tests (smoke)"
+    },
+    {
+      "id": "simulator",
+      "name": "Local bKash simulator package",
+      "category": "Tooling",
       "status": "planned",
-      "description": "BkashModule with injectable services and controllers. Scheduled for Phase 7."
+      "package": "bkash-server",
+      "description": "The test mock is not published as a package.",
+      "evidence": "-"
     }
   ]
 }
