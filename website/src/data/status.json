@@ -196,25 +196,34 @@
       "status": "beta",
       "package": "bkash-server",
       "description": "createExpressHandler.",
-      "evidence": "automated tests"
+      "evidence": "tests inside real Express (with and without a body parser): server price used, browser callbackUrl ignored, unknown routes 404"
     },
     {
       "id": "next-adapter",
       "name": "Next.js route handler",
       "category": "Server",
-      "status": "experimental",
+      "status": "beta",
       "package": "bkash-server",
       "description": "createNextHandler.",
-      "evidence": "automated tests (smoke)"
+      "evidence": "tests: route handler answers /create with the web-standard Request and Response"
     },
     {
-      "id": "other-adapters",
-      "name": "Fastify, Hono, Koa, Remix, SvelteKit, Astro adapters",
+      "id": "fastify-hono-koa",
+      "name": "Fastify, Hono and Koa adapters",
       "category": "Server",
-      "status": "experimental",
+      "status": "beta",
       "package": "bkash-server",
-      "description": "Thin wrappers over the web-standard handler.",
-      "evidence": "automated tests (smoke)"
+      "description": "createFastifyHandler, createHonoHandler, createKoaHandler.",
+      "evidence": "tests inside real Fastify, Hono and Koa"
+    },
+    {
+      "id": "remix-sveltekit-astro",
+      "name": "Remix, SvelteKit and Astro adapters",
+      "category": "Server",
+      "status": "beta",
+      "package": "bkash-server",
+      "description": "createRemixHandler, createSvelteKitHandler, createAstroHandler.",
+      "evidence": "tests with the web-standard Request and Response these frameworks pass"
     },
     {
       "id": "simulator",

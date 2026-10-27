@@ -137,7 +137,7 @@ import { createExpressHandler, createNextHandler, createFastifyHandler, createHo
 export const { GET, POST } = createNextHandler(bkash, { basePath: '/api/bkash', resolveOrder });
 ```
 
-Koa, Remix, SvelteKit and Astro adapters are also exported. Express, Next.js, Fastify, Hono, Koa, Remix, SvelteKit and Astro adapters are smoke-tested only; see [feature status](../status/).
+Koa, Remix, SvelteKit and Astro adapters are also exported. Express, Fastify, Hono and Koa are tested inside the real frameworks; Next.js, Remix, SvelteKit and Astro are tested with the web-standard Request and Response they pass to handlers. See [feature status](../status/).
 
 ## Runtimes
 

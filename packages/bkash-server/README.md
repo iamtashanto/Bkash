@@ -72,9 +72,10 @@ Pair it with [`bkash-client`](https://www.npmjs.com/package/bkash-client) in the
 | Direct Charge / Linked Apps | Planned | Specification not public |
 | Dynamic Charging | Planned | Specification not public |
 | Disbursement, B2B and M2M payouts | Planned | Specification not public |
-| Express adapter | Beta | automated tests |
-| Next.js route handler | Experimental | automated tests (smoke) |
-| Fastify, Hono, Koa, Remix, SvelteKit, Astro adapters | Experimental | automated tests (smoke) |
+| Express adapter | Beta | tests inside real Express (with and without a body parser): server price used, browser callbackUrl ignored, unknown routes 404 |
+| Next.js route handler | Beta | tests: route handler answers /create with the web-standard Request and Response |
+| Fastify, Hono and Koa adapters | Beta | tests inside real Fastify, Hono and Koa |
+| Remix, SvelteKit and Astro adapters | Beta | tests with the web-standard Request and Response these frameworks pass |
 | Local bKash simulator package | Planned | - |
 <!-- status:end -->
 
