@@ -86,7 +86,7 @@ function renderTemplate(content, metadata = {}) {
     PAGE_TITLE: metadata.title || "bKash SDK for JavaScript & TypeScript",
     PAGE_DESCRIPTION:
       metadata.description ||
-      "Production-hardened, zero-dependency bKash payment SDK with token caching and multi-framework client bindings.",
+      "Zero-dependency bKash payment SDK with token caching and multi-framework client bindings.",
     PAGE_CANONICAL: `${SITE_URL}${BASE_PATH}${metadata.path ? metadata.path.replace(/^\/+/, "") : ""}`,
   };
 
@@ -320,7 +320,7 @@ function buildPages() {
       meta: {
         title: "bKash SDK — Modern, Type-Safe Payments for JS/TS",
         description:
-          "Unofficial, production-hardened bKash payment SDK with proactive token caching, idempotency guards, and React/React Native bindings.",
+          "Unofficial bKash payment SDK with proactive token caching, idempotency guards, and React/React Native bindings.",
         path: "",
       },
     },

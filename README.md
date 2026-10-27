@@ -133,3 +133,7 @@ pnpm typecheck
 ## License
 
 MIT © [Open Source & Contributors](https://github.com/iamtashanto/Bkash)
+
+---
+
+Developed by [TA Shanto](https://tashanto.com) · [npm](https://www.npmjs.com/package/bkash-server) · [GitHub](https://github.com/iamtashanto/Bkash)
