@@ -106,8 +106,10 @@ describe('Extended Core Coverage & Framework Adapters', () => {
       const hookErr = new BkashWebhookVerificationError('invalid signature');
       expect(hookErr.reason).toBe('invalid signature');
 
-      const mappedKnown = mapBkashErrorCode('2005');
-      expect(mappedKnown.message).toContain('insufficient balance');
+      // Official table (developer.bka.sh): 2023 = Insufficient Balance, 2005 = Invalid frequency
+      expect(mapBkashErrorCode('2023').message).toBe('Insufficient Balance');
+      expect(mapBkashErrorCode('2005').message).toBe('Invalid frequency');
+      expect(mapBkashErrorCode('2062').message).toBe('The payment has already been completed');
 
       const mappedUnknown = mapBkashErrorCode('9999', 'Custom unmapped message');
       expect(mappedUnknown.message).toBe('Custom unmapped message');
