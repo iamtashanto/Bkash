@@ -1,103 +1,63 @@
 # bkash-client
 
+Headless checkout bindings for [bKash](https://www.bkash.com) payments: React, React Native, Vue 3, Svelte, Angular and plain JavaScript. Pairs with [`bkash-server`](https://www.npmjs.com/package/bkash-server).
+
 [![CI](https://github.com/iamtashanto/Bkash/actions/workflows/ci.yml/badge.svg)](https://github.com/iamtashanto/Bkash/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![npm version](https://img.shields.io/npm/v/bkash-client.svg?color=indigo)](https://www.npmjs.com/package/bkash-client)
+[![npm](https://img.shields.io/npm/v/bkash-client)](https://www.npmjs.com/package/bkash-client)
+[![license](https://img.shields.io/npm/l/bkash-client)](https://github.com/iamtashanto/Bkash/blob/main/LICENSE)
 
-Headless, tree-shakeable frontend client SDK for bKash payment integrations. Works with React, React Native, Vue, Svelte, Angular, and vanilla HTML `<script>` tags.
+> **Unofficial.** Not affiliated with, endorsed by, or sponsored by bKash Limited. "bKash" is a trademark of bKash Limited.
 
-> **Disclaimer:** This is an open-source, community-maintained SDK and is **NOT** officially affiliated with, endorsed by, or sponsored by bKash Limited. "bKash" is a registered trademark of bKash Limited.
+**Documentation:** <https://iamtashanto.github.io/Bkash/docs/client-guide/> · **Issues:** <https://github.com/iamtashanto/Bkash/issues>
 
----
+## Why
 
-## Features
+- **Never holds secrets or prices.** It only calls your own `/create` route; the server decides the amount.
+- **States that tell the truth.** `idle`, `creating`, `awaiting_user`, `verifying`, `success`, `pending`, `timeout`, `offline`, `cancelled`, `error`. An unknown outcome shows "payment pending, do not pay again", not a failure.
+- **Headless.** No CSS, no modal: you own the markup and the brand.
 
-- **Headless-First Architecture (0.1.x):** Unstyled, headless state machines and hooks (`useBkash`, `<BkashButton />`, `<BkashCheckout />`). Zero opinionated CSS or bundled stylesheets, giving you 100% control over layout and styling. Pre-packaged themes are planned for post-0.1.
-- **Client States:** Fully typed state machine (`idle`, `creating`, `awaiting_user`, `verifying`, `success`, `pending`, `cancelled`, `timeout`, `offline`, `error`). Unknown or timed-out transactions present "payment pending, do not pay again" rather than false errors.
-- **Zero Frontend Secrets:** Never touches merchant credentials or API keys; communicates strictly with your backend routes.
-- **Framework Bindings:** First-class bindings for React (`useBkash`, `<BkashButton />`), React Native (`<BkashCheckout />`), Vue 3 (`useBkash` with deep Refs), Svelte store (`createBkashStore`), and Angular service (`BkashService`).
-- **Drop-in Script Tag:** Standalone IIFE bundle for plain HTML/JS websites.
-
-> **Alpha Limitation (AUD-04):** On Android devices, `<BkashCheckout />` does not automatically attach a native `BackHandler`. Developers must manage Android hardware back actions in their navigation container until built-in BackHandler integration lands in beta.
-
----
-
-## Installation
+## Install
 
 ```bash
-# npm
 npm install bkash-client
-
-# pnpm
-pnpm add bkash-client
-
-# bun
-bun add bkash-client
 ```
 
----
+Optional peers: `react`, `vue`, `react-native` and `react-native-webview` (only for the matching binding).
 
 ## Quickstart (React)
 
 ```tsx
-import React from 'react';
 import { useBkash, BkashButton } from 'bkash-client/react';
 
 export function CheckoutPage() {
-  const { state, error, checkout } = useBkash({
-    createUrl: '/api/bkash/create',
-  });
-
+  const { state, error } = useBkash({ createUrl: '/api/bkash/create' });
   return (
     <div>
-      <h2>Order Summary</h2>
-      <BkashButton
-        amount={1550}
-        invoiceNumber="INV_1001"
-        orderId="ORD_555"
-        className="btn-bkash"
-      >
-        Pay 1,550 BDT with bKash
-      </BkashButton>
-      {error && <p className="error">{error.message}</p>}
+      <BkashButton>Pay with bKash</BkashButton>
+      {state === 'pending' && <p>Payment pending. Do not pay again.</p>}
+      {error && <p>{error.message}</p>}
     </div>
   );
 }
 ```
 
----
+Other bindings (React Native, Vue, Svelte, Angular, vanilla) are in the [client guide](https://iamtashanto.github.io/Bkash/docs/client-guide/).
 
-## React Native / Expo
+## What is supported
 
-```tsx
-import React from 'react';
-import { WebView } from 'react-native-webview';
-import { BkashCheckout } from 'bkash-client/react-native';
+<!-- status:start -->
+<!-- Generated from website/src/data/status.json. Do not edit by hand. -->
+| Feature | Status | Evidence |
+| --- | --- | --- |
+| React hook and button | Beta | automated tests (React Testing Library) |
+| Vue 3 composable | Beta | automated tests (Vue Test Utils) |
+| Svelte store | Beta | automated tests |
+| Angular service | Beta | automated tests |
+| React Native WebView checkout | Experimental | automated tests (React Native Testing Library); NOT TESTED on a device |
+<!-- status:end -->
 
-export function PaymentScreen({ route, navigation }: any) {
-  const { redirectUrl } = route.params;
-
-  return (
-    <BkashCheckout
-      redirectUrl={redirectUrl}
-      callbackUrl="https://merchant.example.com/api/bkash/callback"
-      WebViewComponent={WebView}
-      onSuccess={(paymentId) => {
-        navigation.navigate('Success', { paymentId });
-      }}
-      onCancel={() => {
-        navigation.goBack();
-      }}
-      onError={(err) => {
-        alert(err.message);
-      }}
-    />
-  );
-}
-```
-
----
+> **Android back button:** `BkashCheckout` does not handle the hardware back button yet. Confirm with your navigation library before leaving a payment in progress.
 
 ## License
 
-MIT © [Antigravity Open Source & Contributors](https://github.com/iamtashanto/Bkash)
+MIT

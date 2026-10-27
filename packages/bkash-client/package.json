@@ -120,6 +120,7 @@
   },
   "keywords": [
     "bkash",
+    "bangladesh",
     "payment",
     "checkout",
     "react",
@@ -129,7 +130,7 @@
     "angular",
     "headless"
   ],
-  "author": "Antigravity Open Source",
+  "author": "Md Tanvir Ahamed Shanto (https://github.com/iamtashanto)",
   "license": "MIT",
   "devDependencies": {
     "@testing-library/react": "^16.3.3",
@@ -145,5 +146,17 @@
     "typescript": "^5.5.4",
     "vitest": "^2.1.3",
     "vue": "^3.5.44"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamtashanto/Bkash.git",
+    "directory": "packages/bkash-client"
+  },
+  "homepage": "https://iamtashanto.github.io/Bkash/docs/",
+  "bugs": {
+    "url": "https://github.com/iamtashanto/Bkash/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

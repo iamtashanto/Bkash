@@ -68,6 +68,38 @@ app.listen(3000, () => console.log("Listening on port 3000"));
 
 ---
 
+## Feature status
+
+<!-- status:start -->
+<!-- Generated from website/src/data/status.json. Do not edit by hand. -->
+| Feature | Status | Evidence |
+| --- | --- | --- |
+| Tokenized Checkout v1.2.0-beta | Beta | automated tests against a local mock; live sandbox create+query run on 2026-10-27 (execute needs a customer PIN and is NOT TESTED live) |
+| Tokenized Checkout v2 | Experimental | automated tests against a strict mock of the documented paths and fields; NOT TESTED against the live v2 sandbox |
+| Token cache, refresh and lock | Beta | automated tests (concurrency, lease expiry); real Redis tests run in CI |
+| Amount and invoice verification | Beta | automated tests |
+| Timeout and 2062 reconciliation | Beta | automated tests against a mock |
+| Web-standard HTTP handler | Beta | automated tests: tampering, allowlist, error mapping |
+| Documented error-code table | Stable | automated tests compare the table with the published codes |
+| Agreements (tokenized, v2) | Experimental | automated tests against a strict mock; NOT TESTED live. Not available with apiVersion v1.2.0-beta. |
+| Refund and refund status | Experimental | automated tests; NOT TESTED live |
+| Search transaction | Beta | automated tests |
+| IPN / webhook (AWS SNS) verification | Experimental | automated tests with generated keys; NOT TESTED with a real bKash notification |
+| Auth & Capture | Planned | Specification not public |
+| Direct Charge / Linked Apps | Planned | Specification not public |
+| Dynamic Charging | Planned | Specification not public |
+| Disbursement, B2B and M2M payouts | Planned | Specification not public |
+| React hook and button | Beta | automated tests (React Testing Library) |
+| Vue 3 composable | Beta | automated tests (Vue Test Utils) |
+| Svelte store | Beta | automated tests |
+| Angular service | Beta | automated tests |
+| React Native WebView checkout | Experimental | automated tests (React Native Testing Library); NOT TESTED on a device |
+| Express adapter | Beta | automated tests |
+| Next.js route handler | Experimental | automated tests (smoke) |
+| Fastify, Hono, Koa, Remix, SvelteKit, Astro adapters | Experimental | automated tests (smoke) |
+| Local bKash simulator package | Planned | - |
+<!-- status:end -->
+
 ## Known Limitations for Alpha (AUD-04)
 
 - **Android Hardware Back Button:**
