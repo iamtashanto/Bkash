@@ -1,7 +1,7 @@
 {
   "name": "bkash-server",
   "version": "0.1.0-alpha.1",
-  "description": "Universal, edge-compatible, type-safe bKash server SDK for JavaScript and TypeScript",
+  "description": "Type-safe bKash server SDK for JavaScript and TypeScript",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://img.shields.io/npm/v/bkash-server.svg?color=indigo)](https://www.npmjs.com/package/bkash-server)
 
-Universal, edge-compatible, type-safe bKash payment gateway SDK for Node.js, Deno, Bun, Cloudflare Workers, and modern JavaScript runtimes.
+Type-safe bKash payment gateway SDK for Node.js and other fetch-based JavaScript runtimes (alpha).
 
 > **Disclaimer:** This is an open-source, community-maintained SDK and is **NOT** officially affiliated with, endorsed by, or sponsored by bKash Limited. "bKash" is a registered trademark of bKash Limited.
 
@@ -12,7 +12,7 @@ Universal, edge-compatible, type-safe bKash payment gateway SDK for Node.js, Den
 
 ## Features
 
-- **Universal & Edge-Compatible:** 100% fetch-based core with Web Crypto. Runs on Node.js (>=18), Cloudflare Workers, Vercel Edge, Deno, and Bun.
+- **Fetch-based core:** uses `fetch` and Web Crypto with no Node built-ins in the root entry. Tested on Node.js (>=18); Cloudflare Workers, Vercel Edge, Deno and Bun are NOT TESTED.
 - **Fail-Safe Token Management:** Proactive 50-minute rotation, single-flight Promise deduplication, and distributed Redis lease to prevent the catastrophic **2 calls / hour** credential lockout.
 - **Auto-Reconciliation Engine:** Native recovery on bKash Error `2062` ("payment already completed") and network timeouts (>30s) via background status queries.
 - **Strict Financial Guard:** Mandatory runtime verification of `amount`, `currency === "BDT"`, and `invoiceNumber` on every transaction execution.

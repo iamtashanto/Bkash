@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://img.shields.io/npm/v/bkash-client.svg?color=indigo)](https://www.npmjs.com/package/bkash-client)
 
-Universal, headless, tree-shakeable frontend client SDK for bKash payment integrations. Works with React, React Native, Vue, Svelte, Angular, and vanilla HTML `<script>` tags.
+Headless, tree-shakeable frontend client SDK for bKash payment integrations. Works with React, React Native, Vue, Svelte, Angular, and vanilla HTML `<script>` tags.
 
 > **Disclaimer:** This is an open-source, community-maintained SDK and is **NOT** officially affiliated with, endorsed by, or sponsored by bKash Limited. "bKash" is a registered trademark of bKash Limited.
 
