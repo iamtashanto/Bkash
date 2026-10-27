@@ -1,86 +1,58 @@
-name: Release Packages (Manual Trigger)
+# Manual release to npm with provenance (trusted publishing). Nothing here runs automatically.
+#
+# One-time setup (owner):
+#   1. npmjs.com -> each package -> Settings -> Trusted Publisher: GitHub Actions,
+#      owner iamtashanto, repository Bkash, workflow release.yml, environment npm-publish.
+#   2. GitHub -> Settings -> Environments -> create "npm-publish" with Required reviewers = you.
+name: Release
 
 on:
   workflow_dispatch:
     inputs:
-      dist_tag:
-        description: 'npm dist-tag to publish under (e.g. alpha, beta, latest)'
+      tag:
+        description: "npm dist-tag (alpha, beta, rc or latest)"
         required: true
-        default: 'alpha'
+        default: "alpha"
+        type: choice
+        options: [alpha, beta, rc, latest]
       dry_run:
-        description: 'Perform dry-run without uploading to npm'
+        description: "Dry run (npm publish --dry-run)"
+        required: true
+        default: true
         type: boolean
-        default: false
 
 permissions:
   contents: read
-  id-token: write # Required for npm OIDC trusted provenance publishing
 
 jobs:
   release:
-    name: Publish to npm (OIDC Provenance)
     runs-on: ubuntu-latest
-    environment: npm-release # Protected environment requiring human maintainer approval
+    environment: npm-publish # protected: requires your approval
+    permissions:
+      contents: write # GitHub Release
+      id-token: write # npm provenance / trusted publishing
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
-
-      - name: Secret Scan (Gitleaks)
-        uses: gitleaks/gitleaks-action@v2
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Publish
+        run: |
+          flags="--access public --provenance --tag ${{ inputs.tag }} --no-git-checks"
+          if [ "${{ inputs.dry_run }}" = "true" ]; then flags="$flags --dry-run"; fi
+          pnpm --filter "./packages/*" publish $flags
+      - name: GitHub Release
+        if: ${{ inputs.dry_run == false }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile=false
-
-      - name: Run Test Suite
-        run: pnpm run test
-
-      - name: Build Production Bundles
-        run: pnpm run build
-
-      - name: Packaging Lint (publint)
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx -y publint packages/bkash-server
-          npx -y publint packages/bkash-client
-
-      - name: Type Resolution Verification (attw)
-        run: |
-          npx -y @arethetypeswrong/cli --pack packages/bkash-server
-          npx -y @arethetypeswrong/cli --pack packages/bkash-client
-
-      - name: Publish bkash-server
-        run: |
-          cd packages/bkash-server
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            npm publish --dry-run --tag ${{ inputs.dist_tag }}
-          else
-            npm publish --access public --tag ${{ inputs.dist_tag }} --provenance
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish bkash-client
-        run: |
-          cd packages/bkash-client
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            npm publish --dry-run --tag ${{ inputs.dist_tag }}
-          else
-            npm publish --access public --tag ${{ inputs.dist_tag }} --provenance
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          v=$(node -p "require('./packages/bkash-server/package.json').version")
+          pre=""; if [ "${{ inputs.tag }}" != "latest" ]; then pre="--prerelease"; fi
+          gh release create "v$v" --title "v$v" --generate-notes $pre

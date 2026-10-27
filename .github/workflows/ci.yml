@@ -74,6 +74,9 @@ jobs:
           npx -y @arethetypeswrong/cli --pack packages/bkash-server
           npx -y @arethetypeswrong/cli --pack packages/bkash-client
 
+      - name: Status tables are up to date
+        run: node website/scripts/gen-status.mjs --check
+
       - name: Build Documentation Website
         run: pnpm run build:website
 
