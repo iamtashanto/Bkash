@@ -45,8 +45,8 @@ export function useBkash(options?: BkashClientOptions) {
 }
 
 export interface BkashButtonProps {
-  amount: number | string;
-  invoiceNumber: string;
+  amount?: number | string;
+  invoiceNumber?: string;
   orderId?: string;
   options?: BkashClientOptions;
   className?: string;

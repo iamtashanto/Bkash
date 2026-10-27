@@ -43,9 +43,13 @@ export interface BkashClientOptions {
   onCancel?: () => void;
 }
 
+/**
+ * All fields are optional hints. bkash-server decides the amount and invoice from its own
+ * data and ignores any amount or invoice sent from the browser.
+ */
 export interface InitiateCheckoutParams {
-  amount: number | string;
-  invoiceNumber: string;
+  amount?: number | string;
+  invoiceNumber?: string;
   orderId?: string;
   payerReference?: string;
   metadata?: Record<string, string>;
@@ -128,7 +132,7 @@ export class BkashClient {
    * Initiates payment flow by calling the merchant backend,
    * obtaining the gateway URL, and redirecting the customer.
    */
-  public async checkout(params: InitiateCheckoutParams): Promise<void> {
+  public async checkout(params: InitiateCheckoutParams = {}): Promise<void> {
     // Offline pre-check
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       this.setState('offline');
