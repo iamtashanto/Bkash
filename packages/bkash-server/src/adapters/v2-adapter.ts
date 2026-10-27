@@ -1,4 +1,11 @@
 import type {
+  AgreementResult,
+  CancelAgreementParams,
+  CreateAgreementParams,
+  CreateAgreementResult,
+  ExecuteAgreementParams,
+  QueryAgreementParams,
+  QueryAgreementResult,
   CreatePaymentParams,
   CreatePaymentResult,
   PaymentExecutionResult,
@@ -23,8 +30,8 @@ export interface V2AdapterConfig {
 /**
  * Tokenized Checkout v2 Adapter.
  *
- * NOTE: Marked as EXPERIMENTAL in v0.x pending sandbox end-to-end credential testing.
- * The production-validated adapter is V1Adapter ('v1.2.0-beta').
+ * Request/response shapes follow https://developer.bka.sh (v2 docs). Still flagged
+ * EXPERIMENTAL until an owner-run sandbox end-to-end passes with v2 credentials.
  */
 export class V2Adapter implements BkashVersionAdapter {
   public readonly version = 'v2';
@@ -36,7 +43,8 @@ export class V2Adapter implements BkashVersionAdapter {
   }
 
   private cleanBaseUrl(): string {
-    return this.config.baseUrl.replace(/\/+$/, '');
+    // Accept either the bare host or a base that already includes a version path.
+    return this.config.baseUrl.replace(/\/+$/, '').replace(/\/(v2|v1\.2\.0-beta)$/i, '');
   }
 
   private async request<T>(
@@ -68,7 +76,11 @@ export class V2Adapter implements BkashVersionAdapter {
       try {
         data = text ? (JSON.parse(text) as Record<string, unknown>) : {};
       } catch {
-        throw mapBkashErrorCode('PARSE_ERROR', `Failed to parse v2 response from ${endpoint}: ${text}`, response.status);
+        throw mapBkashErrorCode(
+          'PARSE_ERROR',
+          `Failed to parse v2 response from ${endpoint}: ${text}`,
+          response.status
+        );
       }
 
       const statusCode = String(data['statusCode'] ?? data['externalCode'] ?? data['errorCode'] ?? '');
@@ -84,7 +96,9 @@ export class V2Adapter implements BkashVersionAdapter {
         throw err;
       }
       if (err && typeof err === 'object' && 'name' in err && err.name === 'AbortError') {
-        const timeoutErr = new Error(`Request to bKash v2 endpoint ${endpoint} timed out after ${this.config.timeoutMs}ms`);
+        const timeoutErr = new Error(
+          `Request to bKash v2 endpoint ${endpoint} timed out after ${this.config.timeoutMs}ms`
+        );
         timeoutErr.name = 'TimeoutError';
         throw timeoutErr;
       }
@@ -149,41 +163,50 @@ export class V2Adapter implements BkashVersionAdapter {
     };
   }
 
-  public async createPayment(idToken: string, params: CreatePaymentParams): Promise<CreatePaymentResult> {
-    const endpoint = '/v2/tokenized-checkout/payment/create';
-    const amountStr = formatAmount(params.amount);
+  private headers(idToken: string): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${idToken}`,
+      'X-APP-Key': this.config.appKey,
+    };
+  }
 
-    const result = await this.request<{
-      paymentID: string;
-      bkashURL: string;
-      callbackURL: string;
-      amount: string;
-      currency: 'BDT';
-      merchantInvoiceNumber: string;
-      paymentCreateTime?: string;
-    }>(endpoint, {
+  private post<T>(endpoint: string, idToken: string, body: unknown): Promise<T> {
+    return this.request<T>(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${idToken}`,
-        'X-APP-Key': this.config.appKey,
-      },
-      body: {
-        mode: params.mode ?? '0011',
-        payerReference: params.payerReference ?? ' ',
-        callbackURL: params.callbackUrl,
-        amount: amountStr,
-        currency: 'BDT',
-        intent: params.intent ?? 'sale',
-        merchantInvoiceNumber: params.invoiceNumber,
-      },
+      headers: this.headers(idToken),
+      body,
     });
+  }
+
+  public async createPayment(idToken: string, params: CreatePaymentParams): Promise<CreatePaymentResult> {
+    const withAgreement = Boolean(params.agreementId);
+    const endpoint = withAgreement
+      ? '/v2/tokenized-checkout/payment-with-agreement/create'
+      : '/v2/tokenized-checkout/payment/create';
+
+    const body: Record<string, unknown> = {
+      callbackURL: params.callbackUrl,
+      amount: formatAmount(params.amount),
+      currency: 'BDT',
+      intent: params.intent ?? 'sale',
+      merchantInvoiceNumber: params.invoiceNumber,
+    };
+    if (withAgreement) {
+      body.agreementId = params.agreementId;
+    } else {
+      body.payerReference = params.payerReference || params.invoiceNumber;
+    }
+    if (params.subMerchantName) body.subMerchantName = params.subMerchantName;
+    if (params.merchantAssociationInfo) body.merchantAssociationInfo = params.merchantAssociationInfo;
+
+    const result = await this.post<Record<string, any>>(endpoint, idToken, body);
 
     return {
-      paymentId: result.paymentID,
-      redirectUrl: result.bkashURL,
-      callbackUrl: result.callbackURL,
+      paymentId: pick(result, 'paymentId', 'paymentID'),
+      redirectUrl: pick(result, 'bKashURL', 'bkashURL'),
+      callbackUrl: pick(result, 'callbackURL') || params.callbackUrl,
       amount: result.amount,
       currency: 'BDT',
       invoiceNumber: result.merchantInvoiceNumber,
@@ -192,184 +215,151 @@ export class V2Adapter implements BkashVersionAdapter {
     };
   }
 
-  public async executePayment(idToken: string, paymentId: string): Promise<PaymentExecutionResult> {
-    const endpoint = '/v2/tokenized-checkout/payment/execute';
-    const result = await this.request<{
-      paymentID?: string;
-      paymentId?: string;
-      trxID?: string;
-      trxId?: string;
-      transactionStatus: 'Completed' | 'Authorized';
-      amount: string;
-      currency: 'BDT';
-      merchantInvoiceNumber?: string;
-      invoiceNumber?: string;
-      customerMsisdn?: string;
-      paymentExecuteTime?: string;
-    }>(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${idToken}`,
-        'X-APP-Key': this.config.appKey,
-      },
-      body: {
-        paymentID: paymentId,
-      },
-    });
-
-    const outPaymentId = result.paymentID || result.paymentId || paymentId;
-    const outTrxId = result.trxID || result.trxId || '';
-    const outInvoice = result.merchantInvoiceNumber || result.invoiceNumber || '';
-
+  private toExecution(result: Record<string, any>, paymentId: string, reconciled: boolean): PaymentExecutionResult {
     return {
-      paymentId: outPaymentId,
-      trxId: outTrxId,
+      paymentId: pick(result, 'paymentId', 'paymentID') || paymentId,
+      trxId: pick(result, 'trxId', 'trxID'),
       transactionStatus: result.transactionStatus,
       amount: formatAmount(result.amount),
       currency: result.currency ?? 'BDT',
-      invoiceNumber: outInvoice,
-      customerMsisdn: result.customerMsisdn,
-      completedAt: result.paymentExecuteTime || new Date().toISOString(),
-      reconciled: false,
-      rawResponse: result as unknown as Record<string, unknown>,
+      invoiceNumber: pick(result, 'merchantInvoiceNumber', 'merchantInvoice', 'invoiceNumber'),
+      customerMsisdn: result.payerAccount ?? result.customerMsisdn,
+      completedAt: result.paymentExecuteTime || result.paymentUpdateTime || new Date().toISOString(),
+      reconciled,
+      creditedAmount: result.creditedAmount,
+      couponAmount: result.couponAmount,
+      maxRefundableAmount: result.maxRefundableAmount,
+      agreementId: result.agreementId,
+      rawResponse: result,
     };
+  }
+
+  public async executePayment(
+    idToken: string,
+    paymentId: string,
+    agreementId?: string
+  ): Promise<PaymentExecutionResult> {
+    const result = agreementId
+      ? await this.post<Record<string, any>>('/v2/tokenized-checkout/payment-with-agreement/execute', idToken, {
+          paymentId,
+          agreementId,
+        })
+      : await this.post<Record<string, any>>('/v2/tokenized-checkout/payment/execute', idToken, { paymentId });
+    return this.toExecution(result, paymentId, false);
   }
 
   public async queryPayment(idToken: string, paymentId: string): Promise<PaymentExecutionResult> {
-    const endpoint = '/v2/tokenized-checkout/payment/query';
-    const result = await this.request<{
-      paymentID?: string;
-      paymentId?: string;
-      trxID?: string;
-      trxId?: string;
-      transactionStatus: 'Completed' | 'Authorized';
-      amount: string;
-      currency: 'BDT';
-      merchantInvoiceNumber?: string;
-      invoiceNumber?: string;
-      customerMsisdn?: string;
-      paymentExecuteTime?: string;
-    }>(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${idToken}`,
-        'X-APP-Key': this.config.appKey,
-      },
-      body: {
-        paymentID: paymentId,
-      },
+    const result = await this.post<Record<string, any>>('/v2/tokenized-checkout/query/payment', idToken, {
+      paymentId,
     });
-
-    const outPaymentId = result.paymentID || result.paymentId || paymentId;
-    const outTrxId = result.trxID || result.trxId || '';
-    const outInvoice = result.merchantInvoiceNumber || result.invoiceNumber || '';
-
-    return {
-      paymentId: outPaymentId,
-      trxId: outTrxId,
-      transactionStatus: result.transactionStatus,
-      amount: formatAmount(result.amount),
-      currency: result.currency ?? 'BDT',
-      invoiceNumber: outInvoice,
-      customerMsisdn: result.customerMsisdn,
-      completedAt: result.paymentExecuteTime || new Date().toISOString(),
-      reconciled: true,
-      rawResponse: result as unknown as Record<string, unknown>,
-    };
+    return this.toExecution(result, paymentId, true);
   }
 
   public async searchTransaction(idToken: string, trxId: string): Promise<Record<string, unknown>> {
-    const endpoint = '/v2/tokenized-checkout/general/searchTransaction';
-    return this.request<Record<string, unknown>>(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${idToken}`,
-        'X-APP-Key': this.config.appKey,
-      },
-      body: {
-        trxID: trxId,
-      },
+    return this.post<Record<string, unknown>>('/v2/tokenized-checkout/general/search-transaction', idToken, {
+      trxId,
     });
   }
 
   public async refundPayment(idToken: string, params: RefundParams): Promise<RefundResult> {
-    const endpoint = '/v2/tokenized-checkout/payment/refund';
-    const result = await this.request<{
-      refundTrxID?: string;
-      refundTrxId?: string;
-      originalTrxID?: string;
-      originalTrxId?: string;
-      amount: string;
-      currency: 'BDT';
-      completedTime?: string;
-      transactionStatus: 'Completed';
-    }>(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${idToken}`,
-        'X-APP-Key': this.config.appKey,
-      },
-      body: {
-        paymentID: params.paymentId,
-        trxID: params.trxId,
-        amount: formatAmount(params.amount),
-        reason: params.reason,
-        sku: params.sku ?? 'N/A',
-      },
+    const result = await this.post<Record<string, any>>('/v2/tokenized-checkout/refund/payment/transaction', idToken, {
+      paymentId: params.paymentId,
+      trxId: params.trxId,
+      refundAmount: formatAmount(params.amount),
+      reason: params.reason,
+      sku: params.sku ?? 'N/A',
     });
 
     return {
-      refundTrxId: result.refundTrxID || result.refundTrxId || '',
-      originalTrxId: result.originalTrxID || result.originalTrxId || params.trxId,
-      amount: formatAmount(result.amount),
+      refundTrxId: pick(result, 'refundTrxId', 'refundTrxID'),
+      originalTrxId: pick(result, 'originalTrxId', 'originalTrxID') || params.trxId,
+      amount: formatAmount(result.refundAmount ?? result.amount),
       currency: result.currency ?? 'BDT',
       completedAt: result.completedTime || new Date().toISOString(),
-      transactionStatus: result.transactionStatus,
-      rawResponse: result as unknown as Record<string, unknown>,
+      transactionStatus: result.refundTransactionStatus ?? result.transactionStatus,
+      rawResponse: result,
     };
   }
 
   public async refundStatus(idToken: string, params: RefundStatusParams): Promise<RefundStatusResult> {
-    const endpoint = '/v2/tokenized-checkout/refund/payment/status';
-    const result = await this.request<{
-      refundTrxID?: string;
-      refundTrxId?: string;
-      originalTrxID?: string;
-      originalTrxId?: string;
-      amount?: string;
-      currency?: 'BDT';
-      completedTime?: string;
-      transactionStatus?: 'Completed';
-    }>(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${idToken}`,
-        'X-APP-Key': this.config.appKey,
-      },
-      body: {
-        paymentID: params.paymentId,
-        trxID: params.trxId,
-      },
+    const result = await this.post<Record<string, any>>('/v2/tokenized-checkout/refund/payment/status', idToken, {
+      paymentId: params.paymentId,
+      trxId: params.trxId,
     });
 
+    const refunds = Array.isArray(result.refundTransactions)
+      ? result.refundTransactions.map((r: Record<string, any>) => ({
+          refundTrxId: String(r.refundTrxId ?? r.refundTrxID ?? ''),
+          refundTransactionStatus: String(r.refundTransactionStatus ?? ''),
+          refundAmount: String(r.refundAmount ?? ''),
+          completedTime: r.completedTime,
+        }))
+      : [];
+    const last = refunds[refunds.length - 1];
+
     return {
-      refundTrxId: result.refundTrxID || result.refundTrxId || '',
-      originalTrxId: result.originalTrxID || result.originalTrxId || params.trxId,
-      amount: formatAmount(result.amount || '0'),
-      currency: result.currency ?? 'BDT',
-      completedAt: result.completedTime || new Date().toISOString(),
-      transactionStatus: result.transactionStatus || 'Completed',
-      rawResponse: result as unknown as Record<string, unknown>,
+      refundTrxId: last?.refundTrxId ?? '',
+      originalTrxId: pick(result, 'originalTrxId', 'originalTrxID') || params.trxId,
+      amount: formatAmount(last?.refundAmount || '0'),
+      currency: 'BDT',
+      completedAt: last?.completedTime || new Date().toISOString(),
+      transactionStatus: (last?.refundTransactionStatus as 'Completed') || 'Completed',
+      refunds,
+      rawResponse: result,
     };
   }
+
+  public async createAgreement(idToken: string, params: CreateAgreementParams): Promise<CreateAgreementResult> {
+    const result = await this.post<Record<string, any>>('/v2/tokenized-checkout/agreement/create', idToken, {
+      payerReference: params.payerReference,
+      callbackURL: params.callbackUrl,
+    });
+    return {
+      paymentId: pick(result, 'paymentId', 'paymentID'),
+      agreementId: result.agreementId,
+      redirectUrl: pick(result, 'bKashURL', 'bkashURL'),
+      callbackUrl: result.callbackURL || params.callbackUrl,
+      status: 'Initiated',
+    };
+  }
+
+  public async executeAgreement(idToken: string, params: ExecuteAgreementParams): Promise<AgreementResult> {
+    const result = await this.post<Record<string, any>>('/v2/tokenized-checkout/agreement/execute', idToken, {
+      agreementId: params.agreementId,
+    });
+    return {
+      agreementId: result.agreementId ?? params.agreementId,
+      payerReference: result.payerReference ?? '',
+      agreementStatus: result.agreementStatus,
+      customerMsisdn: result.payerAccount,
+      rawResponse: result,
+    };
+  }
+
+  public async cancelAgreement(idToken: string, params: CancelAgreementParams): Promise<Record<string, unknown>> {
+    return this.post<Record<string, unknown>>('/v2/tokenized-checkout/agreement/cancel', idToken, {
+      agreementId: params.agreementId,
+    });
+  }
+
+  public async queryAgreement(idToken: string, params: QueryAgreementParams): Promise<QueryAgreementResult> {
+    const result = await this.post<Record<string, any>>('/v2/tokenized-checkout/query/agreement', idToken, {
+      agreementId: params.agreementId,
+    });
+    return {
+      agreementId: result.agreementId ?? params.agreementId,
+      agreementStatus: result.agreementStatus,
+      verificationStatus: result.verificationStatus,
+      payerReference: result.payerReference,
+      customerMsisdn: result.payerAccount,
+      rawResponse: result,
+    };
+  }
+}
+
+function pick(obj: Record<string, any>, ...keys: string[]): string {
+  for (const k of keys) {
+    if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return String(obj[k]);
+  }
+  return '';
 }

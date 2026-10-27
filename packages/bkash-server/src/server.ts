@@ -4,6 +4,8 @@ import type {
   BkashPaymentStatus,
   BkashServerConfig,
   CancelAgreementParams,
+  QueryAgreementParams,
+  QueryAgreementResult,
   CapturePaymentParams,
   CaptureResult,
   CreateAgreementParams,
@@ -139,10 +141,9 @@ export class BkashServer {
       return this.activeRefreshPromise;
     }
 
-    this.activeRefreshPromise = this.executeTokenRefresh(cached)
-      .finally(() => {
-        this.activeRefreshPromise = null;
-      });
+    this.activeRefreshPromise = this.executeTokenRefresh(cached).finally(() => {
+      this.activeRefreshPromise = null;
+    });
 
     return this.activeRefreshPromise;
   }
@@ -171,7 +172,11 @@ export class BkashServer {
     }
 
     try {
-      let freshData: { idToken: string; refreshToken?: string; expiresIn: number };
+      let freshData: {
+        idToken: string;
+        refreshToken?: string;
+        expiresIn: number;
+      };
 
       if (this.config.apiVersion === 'v2' && current?.refreshToken) {
         try {
@@ -210,6 +215,9 @@ export class BkashServer {
     }
 
     const token = await this.getValidToken();
+    if (params.agreementId && !this.adapter.executeAgreement) {
+      throw new BkashFeatureNotSupportedError('payment-with-agreement', this.adapter.version);
+    }
     const result = await this.adapter.createPayment(token, params);
 
     // Save session if sessionStore is configured
@@ -217,6 +225,7 @@ export class BkashServer {
       const session: PaymentSession = {
         paymentId: result.paymentId,
         orderId: params.orderId,
+        agreementId: params.agreementId,
         expectedOrder: {
           amount: params.amount,
           currency: 'BDT',
@@ -242,12 +251,14 @@ export class BkashServer {
     }
 
     let expectedOrder: ExpectedOrderDetails | undefined = params.expectedOrder;
+    let agreementId: string | undefined = params.agreementId;
 
-    // Resolve expectedOrder from SessionStore if not supplied directly
-    if (!expectedOrder && this.config.sessionStore) {
+    // Resolve expectedOrder (and agreementId) from SessionStore if not supplied directly
+    if (this.config.sessionStore && (!expectedOrder || !agreementId)) {
       const session = await this.config.sessionStore.getSession(params.paymentId);
       if (session) {
-        expectedOrder = session.expectedOrder;
+        expectedOrder = expectedOrder ?? session.expectedOrder;
+        agreementId = agreementId ?? session.agreementId;
       }
     }
 
@@ -270,7 +281,7 @@ export class BkashServer {
       let executionResult: PaymentExecutionResult;
 
       try {
-        executionResult = await this.adapter.executePayment(token, params.paymentId);
+        executionResult = await this.adapter.executePayment(token, params.paymentId, agreementId);
       } catch (err: unknown) {
         // Case 1: Error 2062 ("The payment has already been completed")
         const is2062 =
@@ -360,10 +371,7 @@ export class BkashServer {
   /**
    * Public reconciliation method for asynchronous jobs / cron workers.
    */
-  public async reconcile(
-    paymentId: string,
-    expectedOrder?: ExpectedOrderDetails
-  ): Promise<PaymentExecutionResult> {
+  public async reconcile(paymentId: string, expectedOrder?: ExpectedOrderDetails): Promise<PaymentExecutionResult> {
     let order = expectedOrder;
     if (!order && this.config.sessionStore) {
       const session = await this.config.sessionStore.getSession(paymentId);
@@ -390,8 +398,7 @@ export class BkashServer {
     }
 
     if (this.config.sessionStore) {
-      const newStatus: BkashPaymentStatus =
-        result.transactionStatus === 'Completed' ? 'Completed' : 'Initiated';
+      const newStatus: BkashPaymentStatus = result.transactionStatus === 'Completed' ? 'Completed' : 'Initiated';
       await this.config.sessionStore.updateSessionStatus(paymentId, newStatus);
     }
 
@@ -405,7 +412,8 @@ export class BkashServer {
    * Query payment status by paymentId (accepts either string or { paymentId }).
    */
   public async queryPayment(params: QueryPaymentParams | string): Promise<PaymentExecutionResult> {
-    const paymentId = typeof params === 'string' ? params.trim() : (params?.paymentId ? String(params.paymentId).trim() : '');
+    const paymentId =
+      typeof params === 'string' ? params.trim() : params?.paymentId ? String(params.paymentId).trim() : '';
     if (!paymentId) {
       throw new BkashError('paymentId is required for queryPayment.');
     }
@@ -445,43 +453,78 @@ export class BkashServer {
   }
 
   /**
-   * Create an agreement session (Mode 0000 or 0001).
-   * @throws {BkashFeatureNotSupportedError} Agreements are not supported in 0.1.x.
+   * Start account binding (agreement). v2 only. Redirect the customer to `redirectUrl`,
+   * then call executeAgreement after the callback and store the agreementId.
    */
-  public async createAgreement(_params: CreateAgreementParams): Promise<CreateAgreementResult> {
-    throw new BkashFeatureNotSupportedError('agreements');
+  public async createAgreement(params: CreateAgreementParams): Promise<CreateAgreementResult> {
+    if (!this.adapter.createAgreement) throw new BkashFeatureNotSupportedError('agreements', this.adapter.version);
+    if (!params?.payerReference || !params?.callbackUrl) {
+      throw new BkashError('payerReference and callbackUrl are required to create an agreement.');
+    }
+    const token = await this.getValidToken();
+    return this.adapter.createAgreement(token, params);
   }
 
   /**
-   * Execute an agreement session.
-   * @throws {BkashFeatureNotSupportedError} Agreements are not supported in 0.1.x.
+   * Complete account binding after the customer verified wallet + OTP. v2 only.
    */
-  public async executeAgreement(_params: ExecuteAgreementParams): Promise<AgreementResult> {
-    throw new BkashFeatureNotSupportedError('agreements');
+  public async executeAgreement(params: ExecuteAgreementParams): Promise<AgreementResult> {
+    if (!this.adapter.executeAgreement) throw new BkashFeatureNotSupportedError('agreements', this.adapter.version);
+    if (!params?.agreementId) throw new BkashError('agreementId is required to execute an agreement.');
+    const token = await this.getValidToken();
+    const result = await this.adapter.executeAgreement(token, params);
+    return {
+      ...result,
+      customerMsisdn: result.customerMsisdn ? maskMsisdn(result.customerMsisdn) : undefined,
+    };
   }
 
   /**
-   * Cancel an active agreement.
-   * @throws {BkashFeatureNotSupportedError} Agreements are not supported in 0.1.x.
+   * Look up an agreement, e.g. to reconcile after an Execute Agreement timeout. v2 only.
    */
-  public async cancelAgreement(_params: CancelAgreementParams): Promise<Record<string, unknown>> {
-    throw new BkashFeatureNotSupportedError('agreements');
+  public async queryAgreement(params: QueryAgreementParams): Promise<QueryAgreementResult> {
+    if (!this.adapter.queryAgreement) throw new BkashFeatureNotSupportedError('agreements', this.adapter.version);
+    if (!params?.agreementId) throw new BkashError('agreementId is required to query an agreement.');
+    const token = await this.getValidToken();
+    const result = await this.adapter.queryAgreement(token, params);
+    return {
+      ...result,
+      customerMsisdn: result.customerMsisdn ? maskMsisdn(result.customerMsisdn) : undefined,
+    };
+  }
+
+  /**
+   * Cancel a stored agreement. v2 only.
+   */
+  public async cancelAgreement(params: CancelAgreementParams): Promise<Record<string, unknown>> {
+    if (!this.adapter.cancelAgreement) throw new BkashFeatureNotSupportedError('agreements', this.adapter.version);
+    if (!params?.agreementId) throw new BkashError('agreementId is required to cancel an agreement.');
+    const token = await this.getValidToken();
+    return this.adapter.cancelAgreement(token, params);
   }
 
   /**
    * Capture an authorized payment.
-   * @throws {BkashFeatureNotSupportedError} Auth and capture are not supported in 0.1.x.
+   * @throws {BkashFeatureNotSupportedError} Auth and capture are not implemented.
    */
   public async capturePayment(_params: CapturePaymentParams): Promise<CaptureResult> {
-    throw new BkashFeatureNotSupportedError('auth-and-capture');
+    throw new BkashFeatureNotSupportedError(
+      'auth-and-capture',
+      undefined,
+      'The capture/void endpoints are not in the public bKash documentation; request the specification from bKash.'
+    );
   }
 
   /**
    * Void an authorized payment.
-   * @throws {BkashFeatureNotSupportedError} Auth and capture are not supported in 0.1.x.
+   * @throws {BkashFeatureNotSupportedError} Auth and capture are not implemented.
    */
   public async voidPayment(_params: VoidPaymentParams): Promise<VoidResult> {
-    throw new BkashFeatureNotSupportedError('auth-and-capture');
+    throw new BkashFeatureNotSupportedError(
+      'auth-and-capture',
+      undefined,
+      'The capture/void endpoints are not in the public bKash documentation; request the specification from bKash.'
+    );
   }
 
   /**
@@ -491,4 +534,3 @@ export class BkashServer {
     return new BkashHttpHandler(this, options);
   }
 }
-

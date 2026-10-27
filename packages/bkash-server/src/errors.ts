@@ -66,11 +66,7 @@ export class BkashVerificationMismatchError extends BkashError {
   public readonly expected: string;
   public readonly actual: string;
 
-  constructor(
-    field: 'amount' | 'currency' | 'invoiceNumber',
-    expected: string,
-    actual: string
-  ) {
+  constructor(field: 'amount' | 'currency' | 'invoiceNumber', expected: string, actual: string) {
     super(
       `Financial verification failed for ${field}: expected "${expected}", received "${actual}". Transaction rejected.`,
       'BKASH_VERIFICATION_MISMATCH'
@@ -132,9 +128,11 @@ export class BkashWebhookVerificationError extends BkashError {
 export class BkashFeatureNotSupportedError extends BkashError {
   public readonly feature: string;
 
-  constructor(feature: string) {
+  constructor(feature: string, apiVersion?: string, detail?: string) {
     super(
-      `Feature "${feature}" is planned for a future release and is not supported in bkash-server 0.1.x. Consult status.json for feature readiness.`,
+      `Feature "${feature}" is not supported` +
+        (apiVersion ? ` with apiVersion "${apiVersion}"` : ' by bkash-server yet') +
+        `.${detail ? ' ' + detail : ''} See the feature status table in the documentation.`,
       'BKASH_FEATURE_NOT_SUPPORTED'
     );
     this.feature = feature;
@@ -166,8 +164,7 @@ export function mapBkashErrorCode(
   raw?: unknown
 ): BkashApiError {
   const externalCode = code ?? 'UNKNOWN';
-  const description =
-    message || KNOWN_BKASH_ERRORS[externalCode] || `bKash API returned error code ${externalCode}`;
+  const description = message || KNOWN_BKASH_ERRORS[externalCode] || `bKash API returned error code ${externalCode}`;
 
   return new BkashApiError(description, {
     externalCode,

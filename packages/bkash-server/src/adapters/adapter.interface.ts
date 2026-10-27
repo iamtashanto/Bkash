@@ -1,6 +1,8 @@
 import type {
   AgreementResult,
   CancelAgreementParams,
+  QueryAgreementParams,
+  QueryAgreementResult,
   CapturePaymentParams,
   CaptureResult,
   CreateAgreementParams,
@@ -32,7 +34,7 @@ export interface BkashVersionAdapter {
 
   createPayment(idToken: string, params: CreatePaymentParams): Promise<CreatePaymentResult>;
 
-  executePayment(idToken: string, paymentId: string): Promise<PaymentExecutionResult>;
+  executePayment(idToken: string, paymentId: string, agreementId?: string): Promise<PaymentExecutionResult>;
 
   queryPayment(idToken: string, paymentId: string): Promise<PaymentExecutionResult>;
 
@@ -45,6 +47,8 @@ export interface BkashVersionAdapter {
   createAgreement?(idToken: string, params: CreateAgreementParams): Promise<CreateAgreementResult>;
 
   executeAgreement?(idToken: string, params: ExecuteAgreementParams): Promise<AgreementResult>;
+
+  queryAgreement?(idToken: string, params: QueryAgreementParams): Promise<QueryAgreementResult>;
 
   cancelAgreement?(idToken: string, params: CancelAgreementParams): Promise<Record<string, unknown>>;
 

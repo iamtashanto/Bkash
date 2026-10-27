@@ -28,8 +28,21 @@ export class V1Adapter implements BkashVersionAdapter {
     this.config = config;
   }
 
+  /**
+   * bKash serves v1.2.0-beta under /v1.2.0-beta on its own hosts. Append it when the
+   * configured base URL points at a bka.sh host without a version path.
+   */
   private cleanBaseUrl(): string {
-    return this.config.baseUrl.replace(/\/+$/, '');
+    const base = this.config.baseUrl.replace(/\/+$/, '');
+    try {
+      const u = new URL(base);
+      if (u.hostname.endsWith('.bka.sh') && !/\/v\d/.test(u.pathname)) {
+        return `${base}/v1.2.0-beta`;
+      }
+    } catch {
+      // not an absolute URL; use as configured
+    }
+    return base;
   }
 
   private async request<T>(
@@ -77,7 +90,9 @@ export class V1Adapter implements BkashVersionAdapter {
         throw err;
       }
       if (err && typeof err === 'object' && 'name' in err && err.name === 'AbortError') {
-        const timeoutErr = new Error(`Request to bKash endpoint ${endpoint} timed out after ${this.config.timeoutMs}ms`);
+        const timeoutErr = new Error(
+          `Request to bKash endpoint ${endpoint} timed out after ${this.config.timeoutMs}ms`
+        );
         timeoutErr.name = 'TimeoutError';
         throw timeoutErr;
       }
