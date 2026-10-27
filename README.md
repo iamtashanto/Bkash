@@ -131,4 +131,4 @@ pnpm typecheck
 
 ## License
 
-MIT © [Antigravity Open Source & Contributors](https://github.com/iamtashanto/Bkash)
+MIT © [Open Source & Contributors](https://github.com/iamtashanto/Bkash)
