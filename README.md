@@ -13,8 +13,8 @@ Type-safe open-source TypeScript monorepo for integrating **bKash** payments int
 
 | Package                                   | Version         | Description                                                                                      | Readme                                                    |
 | :---------------------------------------- | :-------------- | :----------------------------------------------------------------------------------------------- | :-------------------------------------------------------- |
-| [`bkash-server`](./packages/bkash-server) | `0.1.0-alpha.1` | Fetch-based backend SDK with token mutex, order resolution guard, and Web-standard HTTP handler. | [Server Documentation](./packages/bkash-server/README.md) |
-| [`bkash-client`](./packages/bkash-client) | `0.1.0-alpha.1` | Headless client SDK with bindings for React, React Native, Vue 3, Svelte, and Angular.           | [Client Documentation](./packages/bkash-client/README.md) |
+| [`bkash-server`](./packages/bkash-server) | `0.1.0` | Fetch-based backend SDK with token mutex, order resolution guard, and Web-standard HTTP handler. | [Server Documentation](./packages/bkash-server/README.md) |
+| [`bkash-client`](./packages/bkash-client) | `0.1.0` | Headless client SDK with bindings for React, React Native, Vue 3, Svelte, and Angular.           | [Client Documentation](./packages/bkash-client/README.md) |
 
 ---
 
@@ -100,10 +100,10 @@ app.listen(3000, () => console.log("Listening on port 3000"));
 | Local bKash simulator package | Planned | - |
 <!-- status:end -->
 
-## Known Limitations for Alpha (AUD-04)
+## Known limitations
 
 - **Android Hardware Back Button:**
-  In `0.1.x-alpha`, `<BkashCheckout />` for React Native does not automatically hook into Android's native hardware `BackHandler`. If the user presses the device back button during a payment, applications must intercept the back action via React Navigation or custom back listeners to prompt confirmation before dismissal. Built-in Android `BackHandler` integration is scheduled for the Beta release.
+  In `0.1.x`, `<BkashCheckout />` for React Native does not automatically hook into Android's native hardware `BackHandler`. If the user presses the device back button during a payment, applications must intercept the back action via React Navigation or custom back listeners to prompt confirmation before dismissal. Built-in Android `BackHandler` integration is scheduled for the Beta release.
 - **Webhook Verifier Status:**
   `bkash-server/webhook` is marked **EXPERIMENTAL** pending live verification against production AWS SNS notification payloads delivered by bKash.
 - **Roadmap Features:**

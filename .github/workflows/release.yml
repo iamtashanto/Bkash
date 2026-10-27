@@ -12,7 +12,7 @@ on:
       tag:
         description: "npm dist-tag (alpha, beta, rc or latest)"
         required: true
-        default: "alpha"
+        default: "latest"
         type: choice
         options: [alpha, beta, rc, latest]
       dry_run:

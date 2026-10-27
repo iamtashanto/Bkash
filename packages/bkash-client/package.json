@@ -1,6 +1,6 @@
 {
   "name": "bkash-client",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0",
   "description": "Headless, multi-framework client SDK for bKash payment flows",
   "type": "module",
   "main": "./dist/index.cjs",

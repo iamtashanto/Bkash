@@ -1,6 +1,6 @@
 # Release checklist
 
-Release ladder: `0.1.0-alpha.2` → `0.1.0-beta.1` → `0.1.0-rc.1` → stable. Publishing happens only through
+Version history: `0.1.0-alpha.1` (deprecated) → `0.1.0` (first release, 2026-10-27). Publishing happens only through
 `.github/workflows/release.yml` (manual, protected `npm-publish` environment, npm provenance). The `latest` dist-tag
 is moved to a version only when every **stable gate** below is checked.
 
