@@ -87,12 +87,16 @@
   "author": "Md Tanvir Ahamed Shanto (https://github.com/iamtashanto)",
   "license": "MIT",
   "devDependencies": {
+    "@hono/node-server": "1",
     "@types/express": "^5.0.6",
     "@types/ioredis": "^5.0.0",
     "@types/node": "^20.14.0",
     "@vitest/coverage-v8": "^2.1.9",
-    "express": "^5.3.0",
+    "express": "^4.22.3",
+    "fastify": "^4.29.1",
+    "hono": "4",
     "ioredis": "^6.0.0",
+    "koa": "2",
     "tsup": "^8.2.4",
     "typescript": "^5.5.4",
     "vitest": "^2.1.3"
