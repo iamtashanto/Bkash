@@ -1,44 +1,44 @@
-# Release Readiness Checklist
+# Release checklist
 
-**Target Release:** `0.1.0-alpha.1` (Dist-Tag: `alpha`)  
-**Package:** `bkash-server`, `bkash-client`  
-**License:** MIT  
-**Current Status:** **AUTOMATED CHECKS ONLY (NOT READY FOR RELEASE)**
+Release ladder: `0.1.0-alpha.2` → `0.1.0-beta.1` → `0.1.0-rc.1` → stable. Publishing happens only through
+`.github/workflows/release.yml` (manual, protected `npm-publish` environment, npm provenance). The `latest` dist-tag
+is moved to a version only when every **stable gate** below is checked.
 
----
+## Automated gates (state on 2026-10-27, local runs; CI links to be added after the next push)
 
-## 1. Automated Verification Matrix
+| Gate | State | Evidence |
+| --- | --- | --- |
+| Typecheck, unit and regression tests | Pass locally | bkash-server 85+ tests, bkash-client 17 tests, Node 18, 22, 24 |
+| v2 adapter matches the documented API | Pass (mock) | `test/regression/v2-conformance.test.ts` |
+| Error table equals the published table | Pass | `test/regression/error-table.test.ts` |
+| Website samples import real exports | Pass | `test/regression/website-snippets.test.ts` |
+| publint and attw (all subpaths) | Pass locally | run on the packed tarball |
+| Docs: build, HTML validation, links | Pass locally | `pnpm check:website` |
+| Status tables generated from `status.json` | Pass | `node website/scripts/gen-status.mjs --check` |
+| CI matrix green on `main` (Node 18/20/22, real Redis) | Pending | run after push |
+| Quickstarts executed in CI | Pending | planned |
 
-| Verification Item | Tested Environments | Status | Evidence Location |
-| :--- | :--- | :---: | :--- |
-| **Packaging Lint** | `publint` (all exports) | **PASSED** | Clean check in `docs/internal/EVIDENCE.md` |
-| **Type Integrity (attw)** | Node10, Node16 (CJS/ESM), Bundler | **PASSED** | 100% 🟢 table in `docs/internal/EVIDENCE.md` |
-| **Edge / Node-Free Root** | No `@types/node`, `skipLibCheck: false` | **PASSED** | Output in `docs/internal/EVIDENCE.md` |
-| **Package Managers** | npm, pnpm, Yarn Classic, Yarn Berry (NM & PnP), Bun | **PASSED** | Clean install/import outputs in `docs/internal/EVIDENCE.md` |
-| **Runtimes (Local)** | Node.js v24 (macOS), Bun v1.3, Deno v2.9 | **PASSED** | Execution outputs in `docs/internal/EVIDENCE.md` |
-| **Runtimes (CI Matrix)** | Node.js 18, 20, 22 on Ubuntu | **CONFIGURED** | Added to `.github/workflows/ci.yml` |
-| **Real Redis Integration** | Distributed token lock, crash recovery, concurrent execution | **PASSED** | `test/integration/real-redis.test.ts` (localhost:6379) |
-| **Cryptographic Webhook** | Real RSA-SHA256 & RSA-SHA1 signatures with X.509 cert | **PASSED** | `test/unit/webhook-crypto.test.ts` |
-| **Secret Scan (Gitleaks)** | Git history and working tree | **PASSED** | 0 leaks found across 1.91 MB |
+## Stable gates (all required before `latest`)
 
----
+| Gate | State |
+| --- | --- |
+| Live sandbox, v1.2.0-beta: grant, create, query | Done 2026-10-27 (automated, public sandbox credentials) |
+| Live sandbox, v1.2.0-beta: full payment with customer PIN and OTP, plus cancel and insufficient-balance cases | **Owner to run** |
+| Live sandbox, v2 (needs v2 credentials): full payment, refund, agreement flow | **Owner to run** |
+| Real bKash IPN notification verified | **Owner to run** (webhook stays experimental until then) |
+| Real-device Android and iOS smoke test of `BkashCheckout` | **Owner to run** |
+| Accessibility pass (TalkBack and VoiceOver notes) | Open |
+| Independent review of payment, token and webhook code | Open |
+| Shadow-mode or pilot results from a real merchant | Open |
+| Zero open BLOCKER or HIGH findings | Open (see `docs/internal/TRIAGE.md`) |
+| npm trusted publishing configured, 2FA on | Owner to configure |
+| Bangla copy reviewed by a native speaker | Open |
 
-## 2. Gating Items & Open Prerequisites (DO NOT RELEASE UNTIL RESOLVED)
+Without all stable gates the website and READMEs keep the pre-release banner and the package stays on a pre-release tag.
 
-| Item | Scope | Status | Notes / Blocker Description |
-| :--- | :--- | :---: | :--- |
-| **Pre-Release Audit Fixes** | Monorepo Core | **OPEN ❌** | Must fix 3 Blockers (sessionStore default, React Native `<div>`, status.json roadmap claims) from `docs/internal/PRE_RELEASE_AUDIT.md`. |
-| **Sandbox E2E Run** | Live Gateway | **OPEN ❌** | Must be executed by human owner using live bKash Merchant Sandbox credentials (v1.2.0-beta). |
-| **Physical Device UX** | Mobile Client | **OPEN ❌** | Must be tested on physical iOS and Android devices for hardware back, orientation, keyboard, and in-app browser cancellation. |
-| **Cloudflare workerd / Edge** | Edge Handlers | **OPEN ❌** | Not yet executed in miniflare/wrangler environment; currently verified via Web standard `handle` tests only. |
-| **Example Apps CI** | Frameworks | **OPEN ❌** | Standalone apps for 10 frameworks (Express, Fastify, Hono, Next.js, SvelteKit, Remix, Astro, Nuxt, NestJS) to be built in separate CI jobs. |
-| **Bangla Copy Review** | i18n | **OPEN ❌** | Needs native-speaker review for all currency formatting, numerals, and translation strings before claims are published. |
-| **External Security Audit** | Threat Model | **OPEN ❌** | Internal audit complete; external pen-test / security review pending. |
-| **Shadow-Mode Dogfooding** | Production | **OPEN ❌** | Rollout in existing production project under shadow mode (logging mismatches without processing real funds). |
+## Support policy (after stable)
 
----
-
-## 3. Decision
-
-* **Automated Quality Checks:** **PASSED (WITH EVIDENCE)**
-* **Release Approval:** **NO-GO (BLOCKED ON TIER 1 AUDIT FIXES & OWNER SANDBOX E2E)**
+- **Supported versions:** the latest minor release receives fixes; the previous minor receives security fixes for 90 days.
+- **Security contact:** GitHub private vulnerability reporting on this repository. Acknowledgement within 3 business days.
+- **Deprecation:** a deprecated API stays for at least one minor release with a documented replacement and a runtime warning.
+- **bKash API changes:** the SDK follows the published bKash documentation; when bKash changes an endpoint, a patch release follows once the change is confirmed.
