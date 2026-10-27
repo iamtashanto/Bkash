@@ -8,7 +8,7 @@ Headless checkout bindings for [bKash](https://www.bkash.com) payments: React, R
 
 > **Unofficial.** Not affiliated with, endorsed by, or sponsored by bKash Limited. "bKash" is a trademark of bKash Limited.
 
-**Documentation:** <https://iamtashanto.github.io/Bkash/docs/client-guide/> · **Issues:** <https://github.com/iamtashanto/Bkash/issues>
+**Documentation:** <https://bkash-sdk.tashanto.com/docs/client-guide/> · **Issues:** <https://github.com/iamtashanto/Bkash/issues>
 
 ## Why
 
@@ -41,7 +41,7 @@ export function CheckoutPage() {
 }
 ```
 
-Other bindings (React Native, Vue, Svelte, Angular, vanilla) are in the [client guide](https://iamtashanto.github.io/Bkash/docs/client-guide/).
+Other bindings (React Native, Vue, Svelte, Angular, vanilla) are in the [client guide](https://bkash-sdk.tashanto.com/docs/client-guide/).
 
 ## What is supported
 

@@ -102,7 +102,7 @@
     "url": "git+https://github.com/iamtashanto/Bkash.git",
     "directory": "packages/bkash-server"
   },
-  "homepage": "https://iamtashanto.github.io/Bkash/docs/",
+  "homepage": "https://bkash-sdk.tashanto.com/docs/",
   "bugs": {
     "url": "https://github.com/iamtashanto/Bkash/issues"
   },

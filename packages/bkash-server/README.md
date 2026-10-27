@@ -8,7 +8,7 @@ Type-safe server SDK for accepting [bKash](https://www.bkash.com) payments with 
 
 > **Unofficial.** Not affiliated with, endorsed by, or sponsored by bKash Limited. "bKash" is a trademark of bKash Limited.
 
-**Documentation:** <https://iamtashanto.github.io/Bkash/docs/> · **Issues:** <https://github.com/iamtashanto/Bkash/issues> · **Changelog:** <https://github.com/iamtashanto/Bkash/releases>
+**Documentation:** <https://bkash-sdk.tashanto.com/docs/> · **Issues:** <https://github.com/iamtashanto/Bkash/issues> · **Changelog:** <https://github.com/iamtashanto/Bkash/releases>
 
 ## Why
 
@@ -89,7 +89,7 @@ Pair it with [`bkash-client`](https://www.npmjs.com/package/bkash-client) in the
 
 ## Security
 
-Read the [security guide and production checklist](https://iamtashanto.github.io/Bkash/docs/security/) before going live. Report vulnerabilities privately through GitHub's "Report a vulnerability" form, not in public issues.
+Read the [security guide and production checklist](https://bkash-sdk.tashanto.com/docs/security/) before going live. Report vulnerabilities privately through GitHub's "Report a vulnerability" form, not in public issues.
 
 ## License
 
