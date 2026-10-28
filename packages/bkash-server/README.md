@@ -95,3 +95,7 @@ Read the [security guide and production checklist](https://bkash-sdk.tashanto.co
 ## License
 
 MIT
+
+---
+
+Developed by [TA Shanto](https://tashanto.com) · [npm](https://www.npmjs.com/package/bkash-server) · [GitHub](https://github.com/iamtashanto/Bkash)

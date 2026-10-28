@@ -61,3 +61,7 @@ Other bindings (React Native, Vue, Svelte, Angular, vanilla) are in the [client 
 ## License
 
 MIT
+
+---
+
+Developed by [TA Shanto](https://tashanto.com) · [npm](https://www.npmjs.com/package/bkash-client) · [GitHub](https://github.com/iamtashanto/Bkash)
