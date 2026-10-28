@@ -28,6 +28,16 @@ jobs:
   release:
     runs-on: ubuntu-latest
     environment: npm-publish # protected: requires your approval
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     permissions:
       contents: write # GitHub Release
       id-token: write # npm provenance / trusted publishing
@@ -40,9 +50,10 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Build first: the Nagad tests import the built simulator package.
+      - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
       # Trusted publishing (OIDC) needs a recent npm; the one bundled with Node 22 is too old.
       - name: Update npm
         run: npm install -g npm@latest && npm --version
