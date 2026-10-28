@@ -43,11 +43,25 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
-      - name: Publish
+      # Trusted publishing (OIDC) needs a recent npm; the one bundled with Node 22 is too old.
+      - name: Update npm
+        run: npm install -g npm@latest && npm --version
+      - name: Pack
         run: |
-          flags="--access public --provenance --tag ${{ inputs.tag }} --no-git-checks"
+          mkdir -p "$RUNNER_TEMP/tgz"
+          for p in packages/*; do
+            if [ "$(node -p "require('./$p/package.json').private || false")" = "true" ]; then continue; fi
+            pnpm -C "$p" pack --pack-destination "$RUNNER_TEMP/tgz"
+          done
+          ls -la "$RUNNER_TEMP/tgz"
+      - name: Publish with provenance
+        run: |
+          flags="--access public --provenance --tag ${{ inputs.tag }}"
           if [ "${{ inputs.dry_run }}" = "true" ]; then flags="$flags --dry-run"; fi
-          pnpm --filter "./packages/*" publish $flags
+          for t in "$RUNNER_TEMP"/tgz/*.tgz; do
+            echo "Publishing $t"
+            npm publish "$t" $flags
+          done
       - name: GitHub Release
         if: ${{ inputs.dry_run == false }}
         env:
