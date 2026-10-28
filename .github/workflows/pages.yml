@@ -56,7 +56,7 @@ jobs:
         env:
           SITE_URL: ${{ steps.pages.outputs.origin }}
           BASE_PATH: ${{ steps.pages.outputs.base_path }}/
-          SITE_INDEXABLE: 'false'
+          SITE_INDEXABLE: "true"
         run: pnpm --filter bkash-website build
 
       - name: Verify Code Formatting (Prettier)

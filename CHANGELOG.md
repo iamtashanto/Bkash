@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 (2026-10-29)
+
+- Package READMEs and npm pages link to the documentation, npm and GitHub, with the developer credit.
+- Website: npm and GitHub links, readable release banner, removed unproven "production-hardened" wording. The site is now indexable by search engines.
+- No code changes to `bkash-server` or `bkash-client`.
+
 ## 0.1.0 (2026-10-27)
 
 First non-alpha release of `bkash-server` and `bkash-client`. It is **not yet validated end to end against the live bKash gateway** (see the feature status in the documentation).
